@@ -1,7 +1,7 @@
 use std::{process::exit, str::FromStr};
 
-#[derive(Debug)]
-enum TokenKind {
+#[derive(Debug, PartialEq)]
+pub enum TokenKind {
     Reserved,
     Num(i32),
     Eof,
@@ -9,8 +9,8 @@ enum TokenKind {
 
 #[derive(Debug)]
 pub struct Token {
-    kind: TokenKind,
-    input: String,
+    pub kind: TokenKind,
+    pub str: String,
 }
 
 pub fn tokenize(user_input: String) -> Vec<Token> {
@@ -27,7 +27,7 @@ pub fn tokenize(user_input: String) -> Vec<Token> {
             '+' | '-' | '*' | '(' | ')' => {
                 tokens.push(Token {
                     kind: TokenKind::Reserved,
-                    input: user_input.clone(),
+                    str: p.clone(),
                 });
                 p = p.split_off(1);
                 continue;
@@ -37,11 +37,11 @@ pub fn tokenize(user_input: String) -> Vec<Token> {
 
         if c.is_ascii_digit() {
             let (n, str) = str_to_fromstr::<i32>(&p).unwrap();
-            p = String::from(str);
             tokens.push(Token {
                 kind: TokenKind::Num(n),
-                input: user_input.clone(),
+                str: p.clone(),
             });
+            p = String::from(str);
             continue;
         }
 
