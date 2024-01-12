@@ -24,7 +24,7 @@ pub fn tokenize(user_input: &String) -> Vec<Token> {
         }
 
         match c {
-            '+' | '-' | '*' | '(' | ')' => {
+            '+' | '-' | '*' | '/' | '(' | ')' => {
                 tokens.push(Token {
                     kind: TokenKind::Reserved,
                     str: p.clone(),
