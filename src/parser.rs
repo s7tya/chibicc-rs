@@ -27,6 +27,10 @@ impl<'a> Parser<'a> {
         Parser { tokens, cursor: 0 }
     }
 
+    pub fn parse(&mut self) -> Node {
+        self.expr()
+    }
+
     fn consume(&mut self, op: char) -> bool {
         if self.cursor >= self.tokens.len() {
             return false;
@@ -71,7 +75,7 @@ impl<'a> Parser<'a> {
         panic!("expected number, found {:#?}.", token.kind)
     }
 
-    pub fn expr(&mut self) -> Node {
+    fn expr(&mut self) -> Node {
         let mut node = self.mul();
 
         loop {
