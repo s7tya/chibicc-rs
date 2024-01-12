@@ -1,3 +1,7 @@
+mod tokenizer;
+
 fn main() {
-    println!("Hello, world!");
+    let p = String::from("20+5");
+    let a = tokenizer::tokenize(p);
+    println!("{:#?}", a);
 }
