@@ -1,7 +1,7 @@
 use crate::tokenizer::{Token, TokenKind};
 
 #[derive(Debug)]
-enum NodeKind {
+pub enum NodeKind {
     Add,
     Sub,
     Mul,
@@ -11,9 +11,9 @@ enum NodeKind {
 
 #[derive(Debug)]
 pub struct Node {
-    kind: NodeKind,
-    lhs: Option<Box<Node>>,
-    rhs: Option<Box<Node>>,
+    pub kind: NodeKind,
+    pub lhs: Option<Box<Node>>,
+    pub rhs: Option<Box<Node>>,
 }
 
 pub struct Parser<'a> {
