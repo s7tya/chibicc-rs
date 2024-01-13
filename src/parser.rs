@@ -16,11 +16,20 @@ pub struct Node {
     pub rhs: Option<Box<Node>>,
 }
 
+impl Node {
+    pub fn new_num(n: i32) -> Self {
+        Node {
+            kind: NodeKind::Num(n),
+            lhs: None,
+            rhs: None,
+        }
+    }
+}
+
 pub struct Parser<'a> {
     tokens: &'a Vec<Token>,
     cursor: usize,
 }
-//  && token.input[0] == op
 
 impl<'a> Parser<'a> {
     pub fn new(tokens: &'a Vec<Token>) -> Self {
@@ -97,25 +106,41 @@ impl<'a> Parser<'a> {
         }
     }
     fn mul(&mut self) -> Node {
-        let mut node = self.primary();
+        let mut node = self.unary();
 
         loop {
             if self.consume('*') {
                 node = Node {
                     kind: NodeKind::Mul,
                     lhs: Some(Box::from(node)),
-                    rhs: Some(Box::from(self.primary())),
+                    rhs: Some(Box::from(self.unary())),
                 };
             } else if self.consume('/') {
                 node = Node {
                     kind: NodeKind::Div,
                     lhs: Some(Box::from(node)),
-                    rhs: Some(Box::from(self.primary())),
+                    rhs: Some(Box::from(self.unary())),
                 }
             } else {
                 return node;
             }
         }
+    }
+
+    fn unary(&mut self) -> Node {
+        if self.consume('+') {
+            return self.primary();
+        }
+
+        if self.consume('-') {
+            return Node {
+                kind: NodeKind::Sub,
+                lhs: Some(Box::new(Node::new_num(0))),
+                rhs: Some(Box::new(self.primary())),
+            };
+        }
+
+        return self.primary();
     }
 
     fn primary(&mut self) -> Node {
