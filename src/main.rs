@@ -28,23 +28,6 @@ fn run<W: Write>(w: &mut W, p: &String) {
     writeln!(w, "  pop rax");
     writeln!(w, "  ret");
 }
-// fn run_with_result(p: &str) -> i32 {
-//     let mut asm_buf = Vec::<u8>::new();
-//     run(&mut asm_buf, &String::from(p));
-
-//     let mut asm_file = File::create("tmp.s").unwrap();
-//     let _ = asm_file.write_all(&asm_buf).unwrap();
-
-//     let _ = Command::new("cc")
-//         .arg("-o")
-//         .arg("tmp")
-//         .arg("tmp.s")
-//         .output()
-//         .unwrap();
-
-//     let out = Command::new("./tmp").status().unwrap().code().unwrap();
-//     out
-// }
 
 #[cfg(test)]
 mod test {
