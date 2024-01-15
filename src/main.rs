@@ -56,28 +56,31 @@ mod test {
 
     use crate::run;
 
-    fn clean() {
-        let _ = fs::remove_file("tmp");
-        let _ = fs::remove_file("tmp.s");
-    }
-
     fn run_with_result(p: &str) -> i32 {
-        clean();
+        let id = uuid::Uuid::new_v4();
 
         let mut asm_buf = Vec::<u8>::new();
         run(&mut asm_buf, &String::from(p));
 
-        let mut asm_file = File::create("tmp.s").unwrap();
+        let mut asm_file = File::create(format!("{id}.s")).unwrap();
         let _ = asm_file.write_all(&asm_buf).unwrap();
 
         let _ = Command::new("cc")
             .arg("-o")
-            .arg("tmp")
-            .arg("tmp.s")
+            .arg(format!("{id}"))
+            .arg(format!("{id}.s"))
             .output()
             .unwrap();
 
-        let out = Command::new("./tmp").status().unwrap().code().unwrap();
+        let out = Command::new(format!("./{id}"))
+            .status()
+            .unwrap()
+            .code()
+            .unwrap();
+
+        let _ = fs::remove_file(format!("{id}"));
+        let _ = fs::remove_file(format!("{id}.s"));
+
         out
     }
 
