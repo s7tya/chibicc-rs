@@ -30,6 +30,26 @@ pub fn gen<W: Write>(w: &mut W, node: Box<Node>) {
             let _ = writeln!(w, "  cqo");
             let _ = writeln!(w, "  idiv rdi");
         }
+        NodeKind::Eq => {
+            let _ = writeln!(w, "  cmp rax, rdi");
+            let _ = writeln!(w, "  sete al");
+            let _ = writeln!(w, "  movzb rax, al");
+        }
+        NodeKind::Ne => {
+            let _ = writeln!(w, "  cmp rax, rdi");
+            let _ = writeln!(w, "  setne al");
+            let _ = writeln!(w, "  movzb rax, al");
+        }
+        NodeKind::Lt => {
+            let _ = writeln!(w, "  cmp rax, rdi");
+            let _ = writeln!(w, "  setl al");
+            let _ = writeln!(w, "  movzb rax, al");
+        }
+        NodeKind::Le => {
+            let _ = writeln!(w, "  cmp rax, rdi");
+            let _ = writeln!(w, "  setle al");
+            let _ = writeln!(w, "  movzb rax, al");
+        }
         NodeKind::Num(_) => {}
     }
 

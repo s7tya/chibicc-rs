@@ -23,8 +23,28 @@ pub fn tokenize(user_input: &String) -> Vec<Token> {
             continue;
         }
 
+        // 複数文字
         match c {
-            '+' | '-' | '*' | '/' | '(' | ')' => {
+            '<' | '>' | '=' | '!' => {
+                let op: String = p.chars().take(2).collect();
+                match &op[..] {
+                    "<=" | ">=" | "==" | "!=" => {
+                        tokens.push(Token {
+                            kind: TokenKind::Reserved,
+                            str: p.clone(),
+                        });
+                        p = p.split_off(2);
+                        continue;
+                    }
+                    _ => {}
+                }
+            }
+            _ => {}
+        }
+
+        // 一文字
+        match c {
+            '+' | '-' | '*' | '/' | '(' | ')' | '<' | '>' => {
                 tokens.push(Token {
                     kind: TokenKind::Reserved,
                     str: p.clone(),
