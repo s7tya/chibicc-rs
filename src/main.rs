@@ -98,4 +98,40 @@ mod test {
     fn test_unary() {
         assert_eq!(run_with_result(&String::from("-10+20")), 10);
     }
+
+    #[test]
+    fn test_eq() {
+        assert_eq!(run_with_result(&String::from("0==1")), 0);
+        assert_eq!(run_with_result(&String::from("42==42")), 1);
+        assert_eq!(run_with_result(&String::from("0!=1")), 1);
+        assert_eq!(run_with_result(&String::from("42!=42")), 0);
+    }
+
+    #[test]
+    fn test_greater_than() {
+        assert_eq!(run_with_result(&String::from("0<1")), 1);
+        assert_eq!(run_with_result(&String::from("1<1")), 0);
+        assert_eq!(run_with_result(&String::from("2<1")), 0);
+    }
+
+    #[test]
+    fn test_greater_eq_than() {
+        assert_eq!(run_with_result(&String::from("0<=1")), 1);
+        assert_eq!(run_with_result(&String::from("1<=1")), 1);
+        assert_eq!(run_with_result(&String::from("2<=1")), 0);
+    }
+
+    #[test]
+    fn test_less_than() {
+        assert_eq!(run_with_result(&String::from("1>0")), 1);
+        assert_eq!(run_with_result(&String::from("1>1")), 0);
+        assert_eq!(run_with_result(&String::from("1>2")), 0);
+    }
+
+    #[test]
+    fn test_less_eq_than() {
+        assert_eq!(run_with_result(&String::from("1>=0")), 1);
+        assert_eq!(run_with_result(&String::from("1>=1")), 1);
+        assert_eq!(run_with_result(&String::from("1>=2")), 0);
+    }
 }
