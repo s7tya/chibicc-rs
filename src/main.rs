@@ -19,14 +19,14 @@ fn run<W: Write>(w: &mut W, p: &String) {
     let tokens = tokenizer::tokenize(p);
     let tree = parser::Parser::new(&tokens).parse();
 
-    writeln!(w, ".intel_syntax noprefix");
-    writeln!(w, ".globl main");
-    writeln!(w, "main:");
+    let _ = writeln!(w, ".intel_syntax noprefix");
+    let _ = writeln!(w, ".globl main");
+    let _ = writeln!(w, "main:");
 
     generator::gen(w, Box::new(tree));
 
-    writeln!(w, "  pop rax");
-    writeln!(w, "  ret");
+    let _ = writeln!(w, "  pop rax");
+    let _ = writeln!(w, "  ret");
 }
 
 #[cfg(test)]
