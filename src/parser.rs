@@ -40,15 +40,16 @@ impl<'a> Parser<'a> {
         self.expr()
     }
 
-    fn consume(&mut self, op: char) -> bool {
+    fn consume(&mut self, op: &str) -> bool {
         if self.cursor >= self.tokens.len() {
             return false;
         }
 
         let token = &self.tokens[self.cursor];
 
-        if token.kind == TokenKind::Reserved && token.str.chars().nth(0).unwrap() == op {
-            self.cursor += 1;
+        let target: String = token.str.chars().take(op.len()).collect();
+        if token.kind == TokenKind::Reserved && target == op {
+            self.cursor += op.len();
             return true;
         }
 
@@ -88,13 +89,13 @@ impl<'a> Parser<'a> {
         let mut node = self.mul();
 
         loop {
-            if self.consume('+') {
+            if self.consume("+") {
                 node = Node {
                     kind: NodeKind::Add,
                     lhs: Some(Box::from(node)),
                     rhs: Some(Box::from(self.mul())),
                 };
-            } else if self.consume('-') {
+            } else if self.consume("-") {
                 node = Node {
                     kind: NodeKind::Sub,
                     lhs: Some(Box::from(node)),
@@ -109,13 +110,13 @@ impl<'a> Parser<'a> {
         let mut node = self.unary();
 
         loop {
-            if self.consume('*') {
+            if self.consume("*") {
                 node = Node {
                     kind: NodeKind::Mul,
                     lhs: Some(Box::from(node)),
                     rhs: Some(Box::from(self.unary())),
                 };
-            } else if self.consume('/') {
+            } else if self.consume("/") {
                 node = Node {
                     kind: NodeKind::Div,
                     lhs: Some(Box::from(node)),
@@ -128,11 +129,11 @@ impl<'a> Parser<'a> {
     }
 
     fn unary(&mut self) -> Node {
-        if self.consume('+') {
+        if self.consume("+") {
             return self.primary();
         }
 
-        if self.consume('-') {
+        if self.consume("-") {
             return Node {
                 kind: NodeKind::Sub,
                 lhs: Some(Box::new(Node::new_num(0))),
@@ -144,7 +145,7 @@ impl<'a> Parser<'a> {
     }
 
     fn primary(&mut self) -> Node {
-        if self.consume('(') {
+        if self.consume("(") {
             let node = self.expr();
             self.expect(')');
 
