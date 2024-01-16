@@ -13,8 +13,8 @@ pub struct Token {
     pub str: String,
 }
 
-pub fn tokenize(user_input: &String) -> Vec<Token> {
-    let mut p = user_input.clone();
+pub fn tokenize(user_input: &str) -> Vec<Token> {
+    let mut p = user_input.to_string();
     let mut tokens: Vec<Token> = vec![];
 
     while let Some(c) = p.chars().next() {

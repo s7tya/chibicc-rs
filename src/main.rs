@@ -15,7 +15,7 @@ fn main() {
     run(&mut stdout, &args[1]);
 }
 
-fn run<W: Write>(w: &mut W, p: &String) {
+fn run<W: Write>(w: &mut W, p: &str) {
     let tokens = tokenizer::tokenize(p);
     let tree = parser::Parser::new(&tokens).parse();
 
@@ -23,7 +23,7 @@ fn run<W: Write>(w: &mut W, p: &String) {
     let _ = writeln!(w, ".globl main");
     let _ = writeln!(w, "main:");
 
-    generator::gen(w, Box::new(tree));
+    generator::gen(w, tree);
 
     let _ = writeln!(w, "  pop rax");
     let _ = writeln!(w, "  ret");
@@ -46,7 +46,7 @@ mod test {
         run(&mut asm_buf, &String::from(p));
 
         let mut asm_file = File::create(format!("{id}.s")).unwrap();
-        let _ = asm_file.write_all(&asm_buf).unwrap();
+        asm_file.write_all(&asm_buf).unwrap();
 
         let _ = Command::new("cc")
             .arg("-o")
@@ -75,17 +75,17 @@ mod test {
 
     #[test]
     fn test_add_sub() {
-        assert_eq!(run_with_result(&String::from("5+20-4")), 21);
+        assert_eq!(run_with_result("5+20-4"), 21);
     }
 
     #[test]
     fn test_with_space() {
-        assert_eq!(run_with_result(&String::from(" 12 + 34 - 5 ")), 41);
+        assert_eq!(run_with_result(" 12 + 34 - 5 "), 41);
     }
 
     #[test]
     fn test_mul() {
-        assert_eq!(run_with_result(&String::from("5+6*7")), 47);
+        assert_eq!(run_with_result("5+6*7"), 47);
     }
 
     #[test]

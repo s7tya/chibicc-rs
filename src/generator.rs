@@ -2,7 +2,7 @@ use std::io::Write;
 
 use crate::parser::{Node, NodeKind};
 
-pub fn gen<W: Write>(w: &mut W, node: Box<Node>) {
+pub fn gen<W: Write>(w: &mut W, node: Node) {
     if matches!(node.kind, NodeKind::Num(_)) {
         if let NodeKind::Num(n) = node.kind {
             let _ = writeln!(w, "  push {}", n);
@@ -10,8 +10,8 @@ pub fn gen<W: Write>(w: &mut W, node: Box<Node>) {
         }
     }
 
-    gen(w, node.lhs.unwrap());
-    gen(w, node.rhs.unwrap());
+    gen(w, *node.lhs.unwrap());
+    gen(w, *node.rhs.unwrap());
 
     let _ = writeln!(w, "  pop rdi");
     let _ = writeln!(w, "  pop rax");

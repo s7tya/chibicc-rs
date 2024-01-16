@@ -91,9 +91,7 @@ impl<'a> Parser<'a> {
     }
 
     fn expr(&mut self) -> Node {
-        let node = self.equality();
-
-        node
+        self.equality()
     }
 
     fn equality(&mut self) -> Node {
@@ -220,10 +218,10 @@ impl<'a> Parser<'a> {
             return node;
         }
 
-        return Node {
+        Node {
             kind: NodeKind::Num(self.expect_number()),
             lhs: None,
             rhs: None,
-        };
+        }
     }
 }
