@@ -3,3 +3,5 @@ cargo build 2> /dev/null
 cc -o tmp tmp.s
 ./tmp
 echo $?
+
+rm -rf ./tmp ./tmp.s
