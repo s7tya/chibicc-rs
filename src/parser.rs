@@ -6,6 +6,10 @@ pub enum NodeKind {
     Sub,
     Mul,
     Div,
+    Eq,
+    Ne,
+    Lt,
+    Le,
     Num(i32),
 }
 
@@ -56,10 +60,11 @@ impl<'a> Parser<'a> {
         false
     }
 
-    fn expect(&mut self, op: char) {
+    fn expect(&mut self, op: &str) {
         let token = &self.tokens[self.cursor];
 
-        if token.kind == TokenKind::Reserved && token.str.chars().next().unwrap() == op {
+        let target: String = token.str.chars().take(op.len()).collect();
+        if token.kind == TokenKind::Reserved && target == op {
             self.cursor += 1;
             return;
         }
@@ -86,46 +91,115 @@ impl<'a> Parser<'a> {
     }
 
     fn expr(&mut self) -> Node {
-        let mut node = self.mul();
+        let mut node = self.equality();
 
-        loop {
-            if self.consume("+") {
-                node = Node {
-                    kind: NodeKind::Add,
-                    lhs: Some(Box::from(node)),
-                    rhs: Some(Box::from(self.mul())),
-                };
-            } else if self.consume("-") {
-                node = Node {
-                    kind: NodeKind::Sub,
-                    lhs: Some(Box::from(node)),
-                    rhs: Some(Box::from(self.mul())),
-                }
-            } else {
-                return node;
+        if self.consume("+") {
+            node = Node {
+                kind: NodeKind::Add,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.equality())),
+            };
+        } else if self.consume("-") {
+            node = Node {
+                kind: NodeKind::Sub,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.equality())),
             }
         }
+
+        node
     }
+
+    fn equality(&mut self) -> Node {
+        let mut node = self.relational();
+
+        if self.consume("==") {
+            node = Node {
+                kind: NodeKind::Eq,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.relational())),
+            };
+        } else if self.consume("!=") {
+            node = Node {
+                kind: NodeKind::Ne,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.relational())),
+            };
+        }
+
+        node
+    }
+
+    fn relational(&mut self) -> Node {
+        let mut node = self.add();
+
+        if self.consume("<") {
+            node = Node {
+                kind: NodeKind::Lt,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.add())),
+            };
+        } else if self.consume("<=") {
+            node = Node {
+                kind: NodeKind::Le,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.add())),
+            }
+        } else if self.consume(">") {
+            node = Node {
+                kind: NodeKind::Lt,
+                lhs: Some(Box::from(self.add())),
+                rhs: Some(Box::from(node)),
+            };
+        } else if self.consume(">=") {
+            node = Node {
+                kind: NodeKind::Le,
+                lhs: Some(Box::from(self.add())),
+                rhs: Some(Box::from(node)),
+            }
+        }
+
+        node
+    }
+
+    fn add(&mut self) -> Node {
+        let mut node = self.mul();
+
+        if self.consume("+") {
+            node = Node {
+                kind: NodeKind::Add,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.mul())),
+            };
+        } else if self.consume("-") {
+            node = Node {
+                kind: NodeKind::Sub,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.mul())),
+            }
+        }
+
+        node
+    }
+
     fn mul(&mut self) -> Node {
         let mut node = self.unary();
 
-        loop {
-            if self.consume("*") {
-                node = Node {
-                    kind: NodeKind::Mul,
-                    lhs: Some(Box::from(node)),
-                    rhs: Some(Box::from(self.unary())),
-                };
-            } else if self.consume("/") {
-                node = Node {
-                    kind: NodeKind::Div,
-                    lhs: Some(Box::from(node)),
-                    rhs: Some(Box::from(self.unary())),
-                }
-            } else {
-                return node;
+        if self.consume("*") {
+            node = Node {
+                kind: NodeKind::Mul,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.unary())),
+            };
+        } else if self.consume("/") {
+            node = Node {
+                kind: NodeKind::Div,
+                lhs: Some(Box::from(node)),
+                rhs: Some(Box::from(self.unary())),
             }
         }
+
+        node
     }
 
     fn unary(&mut self) -> Node {
@@ -141,13 +215,13 @@ impl<'a> Parser<'a> {
             };
         }
 
-        return self.primary();
+        self.primary()
     }
 
     fn primary(&mut self) -> Node {
         if self.consume("(") {
             let node = self.expr();
-            self.expect(')');
+            self.expect(")");
 
             return node;
         }
