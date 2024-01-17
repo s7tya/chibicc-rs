@@ -4,7 +4,7 @@ use std::{
     process::Command,
 };
 
-use codegen::gen;
+use codegen::{gen, write_asm};
 
 mod codegen;
 mod node;
@@ -23,34 +23,6 @@ fn main() {
     } else {
         write_asm(&mut stdout(), &args[1]);
     }
-}
-
-fn write_asm<W: Write>(w: &mut W, input: &str) {
-    //
-    // Tokenize
-    //
-    let mut tokenizer = tokenizer::Tokenizer::new(input);
-    let tokens = tokenizer.tokenize();
-
-    //
-    // Parse
-    //
-    let mut parser = parser::Parser::new(tokens);
-    let trees = parser.parse();
-
-    //
-    // Codegen
-    //
-    let _ = writeln!(w, ".intel_syntax noprefix");
-    let _ = writeln!(w, ".globl main");
-    let _ = writeln!(w, "main:");
-
-    for tree in trees {
-        gen(w, &tree);
-    }
-
-    let _ = writeln!(w, "  pop rax");
-    let _ = writeln!(w, "  ret");
 }
 
 fn run(input: &str) -> i32 {
