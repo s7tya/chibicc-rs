@@ -141,6 +141,18 @@ mod test {
     use super::Tokenizer;
 
     #[test]
+    fn test_space_between_tokens() {
+        let tokens = Tokenizer::new("5 5 5").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!(
+                "{:?}",
+                vec![Token::Num(5), Token::Num(5), Token::Num(5), Token::Eof]
+            )
+        );
+    }
+
+    #[test]
     fn test_single_digit_tokens() {
         // Plus
         let tokens = Tokenizer::new("+").tokenize();

@@ -55,12 +55,80 @@ fn run(input: &str) -> i32 {
     status_code
 }
 
-// #[cfg(test)]
-// mod test {
-//     use crate::run;
+#[cfg(test)]
+mod test {
+    use crate::run;
 
-//     #[test]
-//     fn test() {
-//         assert_eq!(run("5 + 2"), 7);
-//     }
-// }
+    #[test]
+    fn test_numbers() {
+        assert_eq!(run("0;"), 0);
+        assert_eq!(run("42;"), 42);
+    }
+
+    #[test]
+    fn test_add_sub() {
+        assert_eq!(run("5+20-4;"), 21);
+    }
+
+    #[test]
+    fn test_with_space() {
+        assert_eq!(run(" 12 + 34 -  5 "), 41);
+    }
+
+    #[test]
+    fn test_mul() {
+        assert_eq!(run("5+6*7;"), 47);
+    }
+
+    #[test]
+    fn test_primary() {
+        assert_eq!(run("5*(9-6);"), 15);
+        assert_eq!(run("(3+5)/2;"), 4);
+    }
+
+    #[test]
+    fn test_unary() {
+        assert_eq!(run("-10+20;"), 10);
+    }
+
+    #[test]
+    fn test_eq() {
+        assert_eq!(run("0==1;"), 0);
+        assert_eq!(run("42==42;"), 1);
+        assert_eq!(run("0!=1;"), 1);
+        assert_eq!(run("42!=42;"), 0);
+    }
+
+    #[test]
+    fn test_greater_than() {
+        assert_eq!(run("0<1"), 1);
+        assert_eq!(run("1<1"), 0);
+        assert_eq!(run("2<1"), 0);
+    }
+
+    #[test]
+    fn test_greater_eq_than() {
+        assert_eq!(run("0<=1"), 1);
+        assert_eq!(run("1<=1"), 1);
+        assert_eq!(run("2<=1"), 0);
+    }
+
+    #[test]
+    fn test_less_than() {
+        assert_eq!(run("1>0"), 1);
+        assert_eq!(run("1>1"), 0);
+        assert_eq!(run("1>2"), 0);
+    }
+
+    #[test]
+    fn test_less_eq_than() {
+        assert_eq!(run("1>=0"), 1);
+        assert_eq!(run("1>=1"), 1);
+        assert_eq!(run("1>=2"), 0);
+    }
+
+    #[test]
+    fn test_multiple_statements() {
+        assert_eq!(run("1; 2; 3;"), 3);
+    }
+}
