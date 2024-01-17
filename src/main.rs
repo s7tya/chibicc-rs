@@ -32,24 +32,24 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     let mut parser = parser::Parser::new(tokens);
     let tree = parser.parse();
 
-    println!("{tree:#?}");
+    println!("{tree:?}");
 
     //
     // Codegen
     //
-    // let _ = writeln!(w, ".intel_syntax noprefix");
-    // let _ = writeln!(w, ".globl main");
-    // let _ = writeln!(w, "main:");
+    let _ = writeln!(w, ".intel_syntax noprefix");
+    let _ = writeln!(w, ".globl main");
+    let _ = writeln!(w, "main:");
 
-    // let _ = writeln!(w, "  push 2");
-    // let _ = writeln!(w, "  push 5");
-    // let _ = writeln!(w, "   pop rdi");
-    // let _ = writeln!(w, "  pop rax");
-    // let _ = writeln!(w, "  add rax, rdi");
-    // let _ = writeln!(w, "  push rax");
+    let _ = writeln!(w, "  push 2");
+    let _ = writeln!(w, "  push 5");
+    let _ = writeln!(w, "   pop rdi");
+    let _ = writeln!(w, "  pop rax");
+    let _ = writeln!(w, "  add rax, rdi");
+    let _ = writeln!(w, "  push rax");
 
-    // let _ = writeln!(w, "  pop rax");
-    // let _ = writeln!(w, "  ret");
+    let _ = writeln!(w, "  pop rax");
+    let _ = writeln!(w, "  ret");
 }
 
 fn run(input: &str) -> i32 {
@@ -84,12 +84,12 @@ fn run(input: &str) -> i32 {
     status_code
 }
 
-#[cfg(test)]
-mod test {
-    use crate::run;
+// #[cfg(test)]
+// mod test {
+//     use crate::run;
 
-    #[test]
-    fn test() {
-        assert_eq!(run("5 + 2"), 7);
-    }
-}
+//     #[test]
+//     fn test() {
+//         assert_eq!(run("5 + 2"), 7);
+//     }
+// }

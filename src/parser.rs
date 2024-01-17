@@ -22,7 +22,8 @@ impl Parser {
     }
 
     fn consume(&mut self, token: Token) -> bool {
-        if matches!(self.peek(), token) {
+        let next = self.peek().unwrap();
+        if next == token {
             self.cursor += 1;
             return true;
         }
@@ -31,11 +32,10 @@ impl Parser {
     }
 
     fn expect(&mut self, token: Token) {
-        let next = self.peek();
-        if let Some(next) = &next {
-            if matches!(next, token) {
-                self.cursor += 1;
-            }
+        let next = self.peek().unwrap();
+        if next == token {
+            self.cursor += 1;
+            return;
         }
 
         panic!("expected {token:?}, but got {next:?}");
@@ -215,5 +215,19 @@ impl Parser {
         }
 
         Node::new_num(self.expect_number())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{parser, token::Token};
+
+    #[test]
+    fn test_number() {
+        let tree = parser::Parser::new(vec![Token::Num(42), Token::Semicolon]).parse();
+        assert_eq!(
+            format!("{tree:?}",),
+            "[Node { kind: Num(42), lhs: None, rhs: None }]"
+        );
     }
 }
