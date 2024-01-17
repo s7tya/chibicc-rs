@@ -34,8 +34,6 @@ fn gen_expression<W: Write>(w: &mut W, node: &Node) {
         _ => {}
     }
 
-    println!("{node:?}");
-
     gen_expression(w, node.rhs.as_ref().unwrap());
     let _ = writeln!(w, "  push %rax");
 
