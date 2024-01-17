@@ -138,7 +138,7 @@ impl Tokenizer {
 
 fn str_to_fromstr<F: FromStr>(str: &str) -> Result<(F, usize), F::Err> {
     let index = str
-        .bytes()
+        .chars()
         .position(|byte| !byte.is_ascii_digit())
         .unwrap_or(str.len());
 
