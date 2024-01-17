@@ -8,6 +8,7 @@ use std::{
 mod node;
 mod token;
 mod tokenizer;
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
@@ -15,8 +16,6 @@ fn main() {
     }
 
     write_asm(&mut stdout(), &args[2]);
-
-    // let _ = run("1+5");
 }
 
 fn write_asm<W: Write>(w: &mut W, input: &str) {
@@ -53,30 +52,30 @@ fn run(input: &str) -> i32 {
     let mut asm_file = tempfile::NamedTempFile::new().expect("一時ファイルの作成に失敗しました");
     write_asm(&mut asm_file, input);
 
-    let binary_file = tempfile::NamedTempFile::new().expect("一次ファイルの作成に失敗しました");
-
-    let binary_file_path = binary_file.path();
     let asm_file_path = asm_file.path();
 
-    let metadata = fs::metadata(binary_file_path).unwrap();
-    let mut permissions = metadata.permissions();
-    permissions.set_mode(0o755);
-    fs::set_permissions(binary_file_path, permissions).unwrap();
+    let asm_file_path_str = match asm_file_path.to_str() {
+        Some(path) => path,
+        None => panic!("アセンブリファイルのパスの取得に失敗しました"),
+    };
+    let binary_file_path_str = format!("{asm_file_path_str}.bin");
 
     let _ = Command::new("cc")
         .arg("-x")
         .arg("assembler")
         .arg("-o")
-        .arg(binary_file_path.to_str().unwrap())
-        .arg(asm_file_path.to_str().unwrap())
+        .arg(&binary_file_path_str)
+        .arg(&asm_file_path_str)
         .output()
         .expect("アセンブリのコンパイルに失敗しました");
 
-    let status_code: i32 = Command::new(binary_file_path)
+    let status_code: i32 = Command::new(&binary_file_path_str)
         .status()
         .unwrap()
         .code()
         .unwrap();
+
+    let _ = fs::remove_file(&binary_file_path_str).expect("バイナリファイルの削除に失敗しました");
 
     status_code
 }
