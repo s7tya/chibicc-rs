@@ -4,6 +4,8 @@ use std::{
     process::Command,
 };
 
+use codegen::gen;
+
 mod codegen;
 mod node;
 mod parser;
@@ -34,24 +36,12 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     // Parse
     //
     let mut parser = parser::Parser::new(tokens);
-    let _tree = parser.parse();
+    let tree = parser.parse();
 
     //
     // Codegen
     //
-    let _ = writeln!(w, ".intel_syntax noprefix");
-    let _ = writeln!(w, ".globl main");
-    let _ = writeln!(w, "main:");
-
-    let _ = writeln!(w, "  push 2");
-    let _ = writeln!(w, "  push 5");
-    let _ = writeln!(w, "   pop rdi");
-    let _ = writeln!(w, "  pop rax");
-    let _ = writeln!(w, "  add rax, rdi");
-    let _ = writeln!(w, "  push rax");
-
-    let _ = writeln!(w, "  pop rax");
-    let _ = writeln!(w, "  ret");
+    gen(w, tree.first().unwrap());
 }
 
 fn run(input: &str) -> i32 {
@@ -71,7 +61,7 @@ fn run(input: &str) -> i32 {
         .arg("assembler")
         .arg("-o")
         .arg(&binary_file_path_str)
-        .arg(&asm_file_path_str)
+        .arg(asm_file_path_str)
         .output()
         .expect("アセンブリのコンパイルに失敗しました");
 

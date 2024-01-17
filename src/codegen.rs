@@ -2,7 +2,7 @@ use std::io::Write;
 
 use crate::node::{Node, NodeKind};
 
-pub fn gen<W: Write>(w: &mut W, node: Node) {
+pub fn gen<W: Write>(w: &mut W, node: &Node) {
     if matches!(node.kind, NodeKind::Num(_)) {
         if let NodeKind::Num(n) = node.kind {
             let _ = writeln!(w, "  push {}", n);
@@ -10,8 +10,8 @@ pub fn gen<W: Write>(w: &mut W, node: Node) {
         }
     }
 
-    gen(w, *node.lhs.unwrap());
-    gen(w, *node.rhs.unwrap());
+    gen(w, node.lhs.as_ref().unwrap());
+    gen(w, node.rhs.as_ref().unwrap());
 
     let _ = writeln!(w, "  pop rdi");
     let _ = writeln!(w, "  pop rax");
@@ -50,7 +50,7 @@ pub fn gen<W: Write>(w: &mut W, node: Node) {
             let _ = writeln!(w, "  setle al");
             let _ = writeln!(w, "  movzb rax, al");
         }
-        NodeKind::Assign => {}
+        // NodeKind::Assign => {}
         NodeKind::Num(_) => {}
     }
 
