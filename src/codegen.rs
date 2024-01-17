@@ -53,7 +53,7 @@ pub fn gen<W: Write>(w: &mut W, node: &Node) {
                 _ => {}
             }
 
-            let _ = writeln!(w, "  movzb %al %rax");
+            let _ = writeln!(w, "  movzb %al, %rax");
         }
     }
 }
