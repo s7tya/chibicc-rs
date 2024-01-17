@@ -1,84 +1,242 @@
-use std::{process::exit, str::FromStr};
+use core::panic;
+use std::str::FromStr;
 
-#[derive(Debug, PartialEq)]
-pub enum TokenKind {
-    Reserved,
-    Num(i32),
-    Eof,
+use crate::token::Token;
+
+pub struct Tokenizer {
+    input: String,
+    cursor: usize,
 }
 
-#[derive(Debug)]
-pub struct Token {
-    pub kind: TokenKind,
-    pub str: String,
-}
-
-pub fn tokenize(user_input: &str) -> Vec<Token> {
-    let mut p = user_input.to_string();
-    let mut tokens: Vec<Token> = vec![];
-
-    while let Some(c) = p.chars().next() {
-        if c.is_ascii_whitespace() {
-            p = p.split_off(1);
-            continue;
+impl Tokenizer {
+    pub fn new(input: &str) -> Self {
+        Tokenizer {
+            input: String::from(input),
+            cursor: 0,
         }
-
-        // 複数文字
-        match c {
-            '<' | '>' | '=' | '!' => {
-                let op: String = p.chars().take(2).collect();
-                match &op[..] {
-                    "<=" | ">=" | "==" | "!=" => {
-                        tokens.push(Token {
-                            kind: TokenKind::Reserved,
-                            str: p.clone(),
-                        });
-                        p = p.split_off(2);
-                        continue;
-                    }
-                    _ => {}
-                }
-            }
-            _ => {}
-        }
-
-        // 一文字
-        match c {
-            '+' | '-' | '*' | '/' | '(' | ')' | '<' | '>' => {
-                tokens.push(Token {
-                    kind: TokenKind::Reserved,
-                    str: p.clone(),
-                });
-                p = p.split_off(1);
-                continue;
-            }
-            _ => {}
-        }
-
-        if c.is_ascii_digit() {
-            let (n, str) = str_to_fromstr::<i32>(&p).unwrap();
-            tokens.push(Token {
-                kind: TokenKind::Num(n),
-                str: p.clone(),
-            });
-            p = String::from(str);
-            continue;
-        }
-
-        eprintln!("トークナイズできません: {}", p);
-        exit(1);
     }
 
-    tokens
+    pub fn tokenize(&mut self) -> Vec<Token> {
+        let mut tokens: Vec<Token> = vec![];
+
+        while let Some(c) = self.input.chars().nth(self.cursor) {
+            if c.is_ascii_whitespace() {
+                self.cursor += 1;
+                continue;
+            }
+
+            match self.peek(2).as_str() {
+                ">=" => {
+                    tokens.push(Token::GreaterThanOrEqual);
+                    self.cursor += 2;
+                    continue;
+                }
+                "<=" => {
+                    tokens.push(Token::LessThanOrEqual);
+                    self.cursor += 2;
+                    continue;
+                }
+                "==" => {
+                    tokens.push(Token::Equal);
+                    self.cursor += 2;
+                    continue;
+                }
+                "!=" => {
+                    tokens.push(Token::NotEqual);
+                    self.cursor += 2;
+                    continue;
+                }
+                _ => {}
+            }
+
+            match self.peek(1).as_str() {
+                "+" => {
+                    tokens.push(Token::Plus);
+                    self.cursor += 1;
+                    continue;
+                }
+                "-" => {
+                    tokens.push(Token::Minus);
+                    self.cursor += 1;
+                    continue;
+                }
+                "*" => {
+                    tokens.push(Token::Star);
+                    self.cursor += 1;
+                    continue;
+                }
+                "/" => {
+                    tokens.push(Token::Slash);
+                    self.cursor += 1;
+                    continue;
+                }
+                "(" => {
+                    tokens.push(Token::LeftParen);
+                    self.cursor += 1;
+                    continue;
+                }
+                ")" => {
+                    tokens.push(Token::RightParen);
+                    self.cursor += 1;
+                    continue;
+                }
+                "<" => {
+                    tokens.push(Token::LeftAngleBracket);
+                    self.cursor += 1;
+                    continue;
+                }
+                ">" => {
+                    tokens.push(Token::RightAngleBracket);
+                    self.cursor += 1;
+                    continue;
+                }
+                ";" => {
+                    tokens.push(Token::Semicolon);
+                    self.cursor += 1;
+                    continue;
+                }
+                _ => {}
+            }
+
+            if c.is_ascii_digit() {
+                let string: String = self.input.chars().skip(self.cursor).collect();
+                let (n, len) = str_to_fromstr::<i32>(&string).unwrap();
+
+                tokens.push(Token::Num(n));
+                self.cursor += len;
+                continue;
+            }
+
+            panic!(
+                "トークナイズできません: {}",
+                self.input.chars().skip(self.cursor).collect::<String>()
+            )
+        }
+
+        tokens.push(Token::Eof);
+
+        tokens
+    }
+
+    fn peek(&self, n: usize) -> String {
+        self.input.chars().skip(self.cursor).take(n).collect()
+    }
 }
 
-fn str_to_fromstr<F: FromStr>(str: &str) -> Result<(F, &str), F::Err> {
+fn str_to_fromstr<F: FromStr>(str: &str) -> Result<(F, usize), F::Err> {
     let index = str
         .bytes()
         .position(|byte| !byte.is_ascii_digit())
         .unwrap_or(str.len());
 
-    let (digit_part, remaining_part) = str.split_at(index);
+    let (digit_part, _) = str.split_at(index);
 
-    digit_part.parse().map(|value| (value, remaining_part))
+    digit_part.parse().map(|value| (value, digit_part.len()))
+}
+
+#[cfg(test)]
+mod test {
+    use crate::token::Token;
+
+    use super::Tokenizer;
+
+    #[test]
+    fn test_single_digit_tokens() {
+        // Plus
+        let tokens = Tokenizer::new("+").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Plus, Token::Eof])
+        );
+
+        // Minus
+        let tokens = Tokenizer::new("-").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Minus, Token::Eof])
+        );
+
+        // Star
+        let tokens = Tokenizer::new("*").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Star, Token::Eof])
+        );
+
+        // LeftParen, RightParen
+        let tokens = Tokenizer::new("()").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!(
+                "{:?}",
+                vec![Token::LeftParen, Token::RightParen, Token::Eof]
+            )
+        );
+
+        // LeftAngleBracket, RightAngleBracket
+        let tokens = Tokenizer::new("<>").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!(
+                "{:?}",
+                vec![
+                    Token::LeftAngleBracket,
+                    Token::RightAngleBracket,
+                    Token::Eof
+                ]
+            )
+        );
+    }
+
+    #[test]
+    fn test_two_digit_tokens() {
+        let tokens = Tokenizer::new("==").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Equal, Token::Eof])
+        );
+
+        let tokens = Tokenizer::new(">=").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::GreaterThanOrEqual, Token::Eof])
+        );
+
+        let tokens = Tokenizer::new("<=").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::LessThanOrEqual, Token::Eof])
+        );
+
+        let tokens = Tokenizer::new("!=").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::NotEqual, Token::Eof])
+        );
+    }
+
+    #[test]
+    fn test_tokenizer() {
+        let tokens = Tokenizer::new("1+5-(20*2)==10").tokenize();
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!(
+                "{:?}",
+                vec![
+                    Token::Num(1),
+                    Token::Plus,
+                    Token::Num(5),
+                    Token::Minus,
+                    Token::LeftParen,
+                    Token::Num(20),
+                    Token::Star,
+                    Token::Num(2),
+                    Token::RightParen,
+                    Token::Equal,
+                    Token::Num(10),
+                    Token::Eof,
+                ]
+            )
+        )
+    }
 }

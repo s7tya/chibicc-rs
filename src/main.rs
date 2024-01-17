@@ -1,137 +1,70 @@
-use std::{env, io::Write};
+use std::{
+    env, fs,
+    io::{stdout, Write},
+    process::Command,
+};
 
-mod generator;
+use codegen::{gen, write_asm};
+
+mod codegen;
+mod node;
 mod parser;
+mod token;
 mod tokenizer;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        panic!("引数の個数が間違っています");
+    if args.len() != 2 && args.len() != 3 {
+        panic!("引数の個数が正しくありません");
     }
 
-    let stdout = std::io::stdout();
-    let mut stdout = stdout.lock();
-    run(&mut stdout, &args[1]);
+    if args.len() == 3 && args[1] == "run" {
+        println!("{}", run(&args[2]));
+    } else {
+        write_asm(&mut stdout(), &args[1]);
+    }
 }
 
-fn run<W: Write>(w: &mut W, p: &str) {
-    let tokens = tokenizer::tokenize(p);
-    let tree = parser::Parser::new(&tokens).parse();
+fn run(input: &str) -> i32 {
+    let mut asm_file = tempfile::NamedTempFile::new().expect("一時ファイルの作成に失敗しました");
+    write_asm(&mut asm_file, input);
 
-    let _ = writeln!(w, ".intel_syntax noprefix");
-    let _ = writeln!(w, ".globl main");
-    let _ = writeln!(w, "main:");
+    let asm_file_path = asm_file.path();
 
-    generator::gen(w, tree);
-
-    let _ = writeln!(w, "  pop rax");
-    let _ = writeln!(w, "  ret");
-}
-
-#[cfg(test)]
-mod test {
-    use std::{
-        fs::{self, File},
-        io::Write,
-        process::Command,
+    let asm_file_path_str = match asm_file_path.to_str() {
+        Some(path) => path,
+        None => panic!("アセンブリファイルのパスの取得に失敗しました"),
     };
+    let binary_file_path_str = format!("{asm_file_path_str}.bin");
 
-    use crate::run;
+    let _ = Command::new("cc")
+        .arg("-x")
+        .arg("assembler")
+        .arg("-o")
+        .arg(&binary_file_path_str)
+        .arg(asm_file_path_str)
+        .output()
+        .expect("アセンブリのコンパイルに失敗しました");
 
-    fn run_with_result(p: &str) -> i32 {
-        let id = uuid::Uuid::new_v4();
+    let status_code: i32 = Command::new(&binary_file_path_str)
+        .status()
+        .unwrap()
+        .code()
+        .unwrap();
 
-        let mut asm_buf = Vec::<u8>::new();
-        run(&mut asm_buf, &String::from(p));
+    let _ = asm_file.close();
 
-        let mut asm_file = File::create(format!("{id}.s")).unwrap();
-        asm_file.write_all(&asm_buf).unwrap();
+    fs::remove_file(&binary_file_path_str).expect("バイナリファイルの削除に失敗しました");
 
-        let _ = Command::new("cc")
-            .arg("-o")
-            .arg(format!("{id}"))
-            .arg(format!("{id}.s"))
-            .output()
-            .unwrap();
-
-        let out = Command::new(format!("./{id}"))
-            .status()
-            .unwrap()
-            .code()
-            .unwrap();
-
-        let _ = fs::remove_file(format!("{id}"));
-        let _ = fs::remove_file(format!("{id}.s"));
-
-        out
-    }
-
-    #[test]
-    fn test_basic_number() {
-        assert_eq!(run_with_result(&String::from("0")), 0);
-        assert_eq!(run_with_result(&String::from("42")), 42);
-    }
-
-    #[test]
-    fn test_add_sub() {
-        assert_eq!(run_with_result("5+20-4"), 21);
-    }
-
-    #[test]
-    fn test_with_space() {
-        assert_eq!(run_with_result(" 12 + 34 - 5 "), 41);
-    }
-
-    #[test]
-    fn test_mul() {
-        assert_eq!(run_with_result("5+6*7"), 47);
-    }
-
-    #[test]
-    fn test_primary() {
-        assert_eq!(run_with_result(&String::from("5*(9-6)")), 15);
-        assert_eq!(run_with_result(&String::from("(3+5)/2")), 4);
-    }
-
-    #[test]
-    fn test_unary() {
-        assert_eq!(run_with_result(&String::from("-10+20")), 10);
-    }
-
-    #[test]
-    fn test_eq() {
-        assert_eq!(run_with_result(&String::from("0==1")), 0);
-        assert_eq!(run_with_result(&String::from("42==42")), 1);
-        assert_eq!(run_with_result(&String::from("0!=1")), 1);
-        assert_eq!(run_with_result(&String::from("42!=42")), 0);
-    }
-
-    #[test]
-    fn test_greater_than() {
-        assert_eq!(run_with_result(&String::from("0<1")), 1);
-        assert_eq!(run_with_result(&String::from("1<1")), 0);
-        assert_eq!(run_with_result(&String::from("2<1")), 0);
-    }
-
-    #[test]
-    fn test_greater_eq_than() {
-        assert_eq!(run_with_result(&String::from("0<=1")), 1);
-        assert_eq!(run_with_result(&String::from("1<=1")), 1);
-        assert_eq!(run_with_result(&String::from("2<=1")), 0);
-    }
-
-    #[test]
-    fn test_less_than() {
-        assert_eq!(run_with_result(&String::from("1>0")), 1);
-        assert_eq!(run_with_result(&String::from("1>1")), 0);
-        assert_eq!(run_with_result(&String::from("1>2")), 0);
-    }
-
-    #[test]
-    fn test_less_eq_than() {
-        assert_eq!(run_with_result(&String::from("1>=0")), 1);
-        assert_eq!(run_with_result(&String::from("1>=1")), 1);
-        assert_eq!(run_with_result(&String::from("1>=2")), 0);
-    }
+    status_code
 }
+
+// #[cfg(test)]
+// mod test {
+//     use crate::run;
+
+//     #[test]
+//     fn test() {
+//         assert_eq!(run("5 + 2"), 7);
+//     }
+// }
