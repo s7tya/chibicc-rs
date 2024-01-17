@@ -1,6 +1,7 @@
 use std::{
-    env,
+    env, fs,
     io::{stdout, Write},
+    os::unix::fs::PermissionsExt,
     process::Command,
 };
 
@@ -14,6 +15,8 @@ fn main() {
     }
 
     write_asm(&mut stdout(), &args[2]);
+
+    // let _ = run("1+5");
 }
 
 fn write_asm<W: Write>(w: &mut W, input: &str) {
@@ -35,6 +38,13 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     let _ = writeln!(w, ".globl main");
     let _ = writeln!(w, "main:");
 
+    let _ = writeln!(w, "  push 2");
+    let _ = writeln!(w, "  push 5");
+    let _ = writeln!(w, "   pop rdi");
+    let _ = writeln!(w, "  pop rax");
+    let _ = writeln!(w, "  add rax, rdi");
+    let _ = writeln!(w, "  push rax");
+
     let _ = writeln!(w, "  pop rax");
     let _ = writeln!(w, "  ret");
 }
@@ -45,13 +55,22 @@ fn run(input: &str) -> i32 {
 
     let binary_file = tempfile::NamedTempFile::new().expect("一次ファイルの作成に失敗しました");
 
-    let asm_file_path = &asm_file.path();
     let binary_file_path = binary_file.path();
+    let asm_file_path = asm_file.path();
+
+    let metadata = fs::metadata(binary_file_path).unwrap();
+    let mut permissions = metadata.permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(binary_file_path, permissions).unwrap();
 
     let _ = Command::new("cc")
+        .arg("-x")
+        .arg("assembler")
         .arg("-o")
-        .arg(binary_file_path)
-        .arg(asm_file_path);
+        .arg(binary_file_path.to_str().unwrap())
+        .arg(asm_file_path.to_str().unwrap())
+        .output()
+        .expect("アセンブリのコンパイルに失敗しました");
 
     let status_code: i32 = Command::new(binary_file_path)
         .status()
