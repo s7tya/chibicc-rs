@@ -4,6 +4,7 @@ use std::{
     process::Command,
 };
 
+mod codegen;
 mod node;
 mod parser;
 mod token;
