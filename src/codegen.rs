@@ -29,7 +29,8 @@ fn gen<W: Write>(w: &mut W, node: &Node) {
             let _ = writeln!(w, "  cqo");
             let _ = writeln!(w, "  idiv %rdi");
         }
-        // NodeKind::Assign => {}
+        NodeKind::Assign => {}
+        NodeKind::Var(_) => {}
         NodeKind::Num(_) => {}
         NodeKind::Equal | NodeKind::NotEqual | NodeKind::LessThan | NodeKind::LessThanOrEqual => {
             let _ = writeln!(w, "  cmp %rdi, %rax");
