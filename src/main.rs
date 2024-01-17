@@ -25,10 +25,18 @@ fn main() {
                 let tokens = tokenizer::Tokenizer::new(&args[2]).tokenize();
                 println!("{:?}", tokens);
             }
+            "parse" => {
+                let tokens = tokenizer::Tokenizer::new(&args[2]).tokenize();
+                let trees = parser::Parser::new(tokens).parse();
+                println!("{:?}", trees);
+            }
+            "compile" => {
+                write_asm(&mut stdout(), &args[2]);
+            }
             _ => {}
         }
     } else {
-        write_asm(&mut stdout(), &args[1]);
+        println!("{}", run(&args[1]));
     }
 }
 

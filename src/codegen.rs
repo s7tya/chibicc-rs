@@ -2,17 +2,44 @@ use std::io::Write;
 
 use crate::node::{Node, NodeKind};
 
-fn gen<W: Write>(w: &mut W, node: &Node) {
-    if matches!(node.kind, NodeKind::Num(_)) {
-        if let NodeKind::Num(n) = node.kind {
+fn gen_address<W: Write>(w: &mut W, node: &Node) {
+    if let NodeKind::Var(name) = node.kind {
+        let offset = ((name as u8) - ('a' as u8) + 1) * 8;
+        let _ = writeln!(w, "  lea -{offset}(%rbp), %rax");
+        return;
+    }
+
+    panic!("ローカル変数ではありません: {node:?}");
+}
+
+fn gen_expression<W: Write>(w: &mut W, node: &Node) {
+    match node.kind {
+        NodeKind::Num(n) => {
             let _ = writeln!(w, "  mov ${n}, %rax");
             return;
         }
+        NodeKind::Var(_) => {
+            gen_address(w, node);
+            let _ = writeln!(w, "  mov (%rax), %rax");
+            return;
+        }
+        NodeKind::Assign => {
+            gen_address(w, node.lhs.as_ref().unwrap());
+            let _ = writeln!(w, "  push %rax");
+            gen_expression(w, node.rhs.as_ref().unwrap());
+            let _ = writeln!(w, "  pop %rdi");
+            let _ = writeln!(w, "  mov %rax, (%rdi)");
+            return;
+        }
+        _ => {}
     }
 
-    gen(w, node.rhs.as_ref().unwrap());
+    println!("{node:?}");
+
+    gen_expression(w, node.rhs.as_ref().unwrap());
     let _ = writeln!(w, "  push %rax");
-    gen(w, node.lhs.as_ref().unwrap());
+
+    gen_expression(w, node.lhs.as_ref().unwrap());
     let _ = writeln!(w, "  pop %rdi");
 
     match node.kind {
@@ -29,9 +56,6 @@ fn gen<W: Write>(w: &mut W, node: &Node) {
             let _ = writeln!(w, "  cqo");
             let _ = writeln!(w, "  idiv %rdi");
         }
-        NodeKind::Assign => {}
-        NodeKind::Var(_) => {}
-        NodeKind::Num(_) => {}
         NodeKind::Equal | NodeKind::NotEqual | NodeKind::LessThan | NodeKind::LessThanOrEqual => {
             let _ = writeln!(w, "  cmp %rdi, %rax");
 
@@ -53,6 +77,7 @@ fn gen<W: Write>(w: &mut W, node: &Node) {
 
             let _ = writeln!(w, "  movzb %al, %rax");
         }
+        _ => {}
     }
 }
 
@@ -60,9 +85,15 @@ pub fn codegen<W: Write>(w: &mut W, trees: Vec<Node>) {
     let _ = writeln!(w, "  .globl main");
     let _ = writeln!(w, "main:");
 
+    let _ = writeln!(w, "  push %rbp");
+    let _ = writeln!(w, "  mov %rsp, %rbp");
+    let _ = writeln!(w, "  sub $208, %rsp");
+
     for tree in trees {
-        gen(w, &tree);
+        gen_expression(w, &tree);
     }
 
+    let _ = writeln!(w, "  mov %rbp, %rsp");
+    let _ = writeln!(w, "  pop %rbp");
     let _ = writeln!(w, "  ret");
 }

@@ -74,23 +74,22 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Node {
-        // self.assign()
-        self.equality()
+        self.assign()
     }
 
-    // fn assign(&mut self) -> Node {
-    //     let mut node = self.equality();
+    fn assign(&mut self) -> Node {
+        let mut node = self.equality();
 
-    //     if self.consume(Token::Assign) {
-    //         node = Node {
-    //             kind: NodeKind::Assign,
-    //             lhs: Some(Box::new(node)),
-    //             rhs: Some(Box::new(self.assign())),
-    //         }
-    //     }
+        if self.consume(Token::Assign) {
+            node = Node {
+                kind: NodeKind::Assign,
+                lhs: Some(Box::new(node)),
+                rhs: Some(Box::new(self.assign())),
+            }
+        }
 
-    //     node
-    // }
+        node
+    }
 
     fn equality(&mut self) -> Node {
         let mut node = self.relational();
@@ -213,6 +212,15 @@ impl Parser {
             let node = self.expression();
             self.expect(Token::RightParen);
             return node;
+        }
+
+        if let Some(Token::Ident(v)) = self.peek() {
+            self.cursor += 1;
+            return Node {
+                kind: NodeKind::Var(v),
+                lhs: None,
+                rhs: None,
+            };
         }
 
         Node::new_num(self.expect_number())
