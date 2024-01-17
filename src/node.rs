@@ -12,13 +12,15 @@ pub enum NodeKind {
     Multiply,
     Div,
 
-    // Assign,
     Equal,
     NotEqual,
     LessThan,
     LessThanOrEqual,
 
     Num(i32),
+
+    Assign,
+    Var(char),
 }
 
 impl Node {
