@@ -30,28 +30,29 @@ pub fn gen<W: Write>(w: &mut W, node: &Node) {
             let _ = writeln!(w, "  cqo");
             let _ = writeln!(w, "  idiv rdi");
         }
-        NodeKind::Equal => {
-            let _ = writeln!(w, "  cmp rax, rdi");
-            let _ = writeln!(w, "  sete al");
-            let _ = writeln!(w, "  movzb rax, al");
-        }
-        NodeKind::NotEqual => {
-            let _ = writeln!(w, "  cmp rax, rdi");
-            let _ = writeln!(w, "  setne al");
-            let _ = writeln!(w, "  movzb rax, al");
-        }
-        NodeKind::LessThan => {
-            let _ = writeln!(w, "  cmp rax, rdi");
-            let _ = writeln!(w, "  setl al");
-            let _ = writeln!(w, "  movzb rax, al");
-        }
-        NodeKind::LessThanOrEqual => {
-            let _ = writeln!(w, "  cmp rax, rdi");
-            let _ = writeln!(w, "  setle al");
-            let _ = writeln!(w, "  movzb rax, al");
-        }
         // NodeKind::Assign => {}
         NodeKind::Num(_) => {}
+        NodeKind::Equal | NodeKind::NotEqual | NodeKind::LessThan | NodeKind::LessThanOrEqual => {
+            let _ = writeln!(w, "  cmp rax, rdi");
+
+            match node.kind {
+                NodeKind::Equal => {
+                    let _ = writeln!(w, "  sete al");
+                }
+                NodeKind::NotEqual => {
+                    let _ = writeln!(w, "  setne al");
+                }
+                NodeKind::LessThan => {
+                    let _ = writeln!(w, "  setl al");
+                }
+                NodeKind::LessThanOrEqual => {
+                    let _ = writeln!(w, "  setle al");
+                }
+                _ => {}
+            }
+
+            let _ = writeln!(w, "  movzb rax, al");
+        }
     }
 
     let _ = writeln!(w, "  push rax");

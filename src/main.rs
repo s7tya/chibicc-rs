@@ -36,12 +36,21 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     // Parse
     //
     let mut parser = parser::Parser::new(tokens);
-    let tree = parser.parse();
+    let trees = parser.parse();
 
     //
     // Codegen
     //
-    gen(w, tree.first().unwrap());
+    let _ = writeln!(w, ".intel_syntax noprefix");
+    let _ = writeln!(w, ".globl main");
+    let _ = writeln!(w, "main:");
+
+    for tree in trees {
+        gen(w, &tree);
+    }
+
+    let _ = writeln!(w, "  pop rax");
+    let _ = writeln!(w, "  ret");
 }
 
 fn run(input: &str) -> i32 {
@@ -70,6 +79,8 @@ fn run(input: &str) -> i32 {
         .unwrap()
         .code()
         .unwrap();
+
+    let _ = asm_file.close();
 
     fs::remove_file(&binary_file_path_str).expect("バイナリファイルの削除に失敗しました");
 

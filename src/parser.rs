@@ -59,7 +59,7 @@ impl Parser {
     fn program(&mut self) -> Vec<Node> {
         let mut code: Vec<Node> = vec![];
 
-        while self.cursor < self.tokens.len() {
+        while self.tokens[self.cursor] != Token::Eof {
             code.push(self.statement())
         }
 
