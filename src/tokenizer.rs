@@ -144,21 +144,33 @@ mod test {
     fn test_single_digit_tokens() {
         // Plus
         let tokens = Tokenizer::new("+").tokenize();
-        assert_eq!(format!("{:?}", tokens), format!("{:?}", vec![Token::Plus]));
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Plus, Token::Eof])
+        );
 
         // Minus
         let tokens = Tokenizer::new("-").tokenize();
-        assert_eq!(format!("{:?}", tokens), format!("{:?}", vec![Token::Minus]));
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Minus, Token::Eof])
+        );
 
         // Star
         let tokens = Tokenizer::new("*").tokenize();
-        assert_eq!(format!("{:?}", tokens), format!("{:?}", vec![Token::Star]));
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Star, Token::Eof])
+        );
 
         // LeftParen, RightParen
         let tokens = Tokenizer::new("()").tokenize();
         assert_eq!(
             format!("{:?}", tokens),
-            format!("{:?}", vec![Token::LeftParen, Token::RightParen])
+            format!(
+                "{:?}",
+                vec![Token::LeftParen, Token::RightParen, Token::Eof]
+            )
         );
 
         // LeftAngleBracket, RightAngleBracket
@@ -167,7 +179,11 @@ mod test {
             format!("{:?}", tokens),
             format!(
                 "{:?}",
-                vec![Token::LeftAngleBracket, Token::RightAngleBracket]
+                vec![
+                    Token::LeftAngleBracket,
+                    Token::RightAngleBracket,
+                    Token::Eof
+                ]
             )
         );
     }
@@ -175,30 +191,33 @@ mod test {
     #[test]
     fn test_two_digit_tokens() {
         let tokens = Tokenizer::new("==").tokenize();
-        assert_eq!(format!("{:?}", tokens), format!("{:?}", vec![Token::Equal]));
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!("{:?}", vec![Token::Equal, Token::Eof])
+        );
 
         let tokens = Tokenizer::new(">=").tokenize();
         assert_eq!(
             format!("{:?}", tokens),
-            format!("{:?}", vec![Token::GreaterThanOrEqual])
+            format!("{:?}", vec![Token::GreaterThanOrEqual, Token::Eof])
         );
 
         let tokens = Tokenizer::new("<=").tokenize();
         assert_eq!(
             format!("{:?}", tokens),
-            format!("{:?}", vec![Token::LessThanOrEqual])
+            format!("{:?}", vec![Token::LessThanOrEqual, Token::Eof])
         );
 
         let tokens = Tokenizer::new("!=").tokenize();
         assert_eq!(
             format!("{:?}", tokens),
-            format!("{:?}", vec![Token::NotEqual])
+            format!("{:?}", vec![Token::NotEqual, Token::Eof])
         );
     }
 
     #[test]
     fn test_tokenizer() {
         let tokens = Tokenizer::new("1+5-(20*2)==10").tokenize();
-        assert_eq!(format!("{:?}", tokens), "[Num(1), Plus, Num(5), Minus, LeftParen, Num(20), Star, Num(2), RightParen, Equal, Num(10)]")
+        assert_eq!(format!("{:?}", tokens), "[Num(1), Plus, Num(5), Minus, LeftParen, Num(20), Star, Num(2), RightParen, Equal, Num(10), Eof]")
     }
 }
