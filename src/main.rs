@@ -16,8 +16,17 @@ fn main() {
         panic!("引数の個数が正しくありません");
     }
 
-    if args.len() == 3 && args[1] == "run" {
-        println!("{}", run(&args[2]));
+    if args.len() == 3 {
+        match args[1].as_str() {
+            "run" => {
+                println!("{}", run(&args[2]));
+            }
+            "tokenize" => {
+                let tokens = tokenizer::Tokenizer::new(&args[2]).tokenize();
+                println!("{:?}", tokens);
+            }
+            _ => {}
+        }
     } else {
         write_asm(&mut stdout(), &args[1]);
     }
