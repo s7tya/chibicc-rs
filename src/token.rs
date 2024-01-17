@@ -1,9 +1,11 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Token {
     Plus,
     Minus,
     Star,
     Slash,
+
+    Assign, // =
 
     Equal,              // ==
     NotEqual,           // !=
@@ -13,8 +15,10 @@ pub enum Token {
     LeftParen,
     RightParen,
 
-    LeftAngleBracket,
-    RightAngleBracket,
+    LeftAngleBracket,  // <
+    RightAngleBracket, // >
+
+    Semicolon,
 
     Num(i32),
 }

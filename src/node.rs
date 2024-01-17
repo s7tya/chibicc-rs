@@ -1,31 +1,33 @@
-use crate::token::Token;
+#[derive(Debug)]
+pub struct Node {
+    pub kind: NodeKind,
+    pub lhs: Option<Box<Node>>,
+    pub rhs: Option<Box<Node>>,
+}
 
+#[derive(Debug)]
 pub enum NodeKind {
     Add,
     Sub,
+    Multiply,
     Div,
+
+    Assign,
+
     Equal,
     NotEqual,
     LessThan,
     LessThanOrEqual,
+
     Num(i32),
 }
 
-pub struct Node {
-    kind: NodeKind,
-    lhs: Option<Box<Node>>,
-    rhs: Option<Box<Node>>,
-}
-
-struct Parser {
-    tokens: Vec<Token>,
-    cursor: usize,
-}
-
-impl Parser {
-    pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, cursor: 0 }
+impl Node {
+    pub fn new_num(n: i32) -> Self {
+        Node {
+            kind: NodeKind::Num(n),
+            lhs: None,
+            rhs: None,
+        }
     }
-
-    pub fn parse(&mut self) {}
 }

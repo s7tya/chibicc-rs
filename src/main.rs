@@ -1,11 +1,11 @@
 use std::{
     env, fs,
     io::{stdout, Write},
-    os::unix::fs::PermissionsExt,
     process::Command,
 };
 
 mod node;
+mod parser;
 mod token;
 mod tokenizer;
 
@@ -15,7 +15,7 @@ fn main() {
         panic!("引数の個数が正しくありません");
     }
 
-    write_asm(&mut stdout(), &args[2]);
+    write_asm(&mut stdout(), &args[1]);
 }
 
 fn write_asm<W: Write>(w: &mut W, input: &str) {
@@ -29,23 +29,27 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     //
     // Parse
     //
+    let mut parser = parser::Parser::new(tokens);
+    let tree = parser.parse();
+
+    println!("{tree:#?}");
 
     //
     // Codegen
     //
-    let _ = writeln!(w, ".intel_syntax noprefix");
-    let _ = writeln!(w, ".globl main");
-    let _ = writeln!(w, "main:");
+    // let _ = writeln!(w, ".intel_syntax noprefix");
+    // let _ = writeln!(w, ".globl main");
+    // let _ = writeln!(w, "main:");
 
-    let _ = writeln!(w, "  push 2");
-    let _ = writeln!(w, "  push 5");
-    let _ = writeln!(w, "   pop rdi");
-    let _ = writeln!(w, "  pop rax");
-    let _ = writeln!(w, "  add rax, rdi");
-    let _ = writeln!(w, "  push rax");
+    // let _ = writeln!(w, "  push 2");
+    // let _ = writeln!(w, "  push 5");
+    // let _ = writeln!(w, "   pop rdi");
+    // let _ = writeln!(w, "  pop rax");
+    // let _ = writeln!(w, "  add rax, rdi");
+    // let _ = writeln!(w, "  push rax");
 
-    let _ = writeln!(w, "  pop rax");
-    let _ = writeln!(w, "  ret");
+    // let _ = writeln!(w, "  pop rax");
+    // let _ = writeln!(w, "  ret");
 }
 
 fn run(input: &str) -> i32 {

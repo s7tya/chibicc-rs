@@ -90,6 +90,11 @@ impl Tokenizer {
                     self.cursor += 1;
                     continue;
                 }
+                ";" => {
+                    tokens.push(Token::Semicolon);
+                    self.cursor += 1;
+                    continue;
+                }
                 _ => {}
             }
 
