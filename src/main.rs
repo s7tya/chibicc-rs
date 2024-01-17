@@ -81,7 +81,7 @@ fn run(input: &str) -> i32 {
         .code()
         .unwrap();
 
-    let _ = fs::remove_file(&binary_file_path_str).expect("バイナリファイルの削除に失敗しました");
+    fs::remove_file(&binary_file_path_str).expect("バイナリファイルの削除に失敗しました");
 
     status_code
 }
