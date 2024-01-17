@@ -12,8 +12,7 @@ pub enum NodeKind {
     Multiply,
     Div,
 
-    Assign,
-
+    // Assign,
     Equal,
     NotEqual,
     LessThan,

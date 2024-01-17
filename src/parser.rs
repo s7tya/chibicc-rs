@@ -74,22 +74,23 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Node {
-        self.assign()
+        // self.assign()
+        self.equality()
     }
 
-    fn assign(&mut self) -> Node {
-        let mut node = self.equality();
+    // fn assign(&mut self) -> Node {
+    //     let mut node = self.equality();
 
-        if self.consume(Token::Assign) {
-            node = Node {
-                kind: NodeKind::Assign,
-                lhs: Some(Box::new(node)),
-                rhs: Some(Box::new(self.assign())),
-            }
-        }
+    //     if self.consume(Token::Assign) {
+    //         node = Node {
+    //             kind: NodeKind::Assign,
+    //             lhs: Some(Box::new(node)),
+    //             rhs: Some(Box::new(self.assign())),
+    //         }
+    //     }
 
-        node
-    }
+    //     node
+    // }
 
     fn equality(&mut self) -> Node {
         let mut node = self.relational();
