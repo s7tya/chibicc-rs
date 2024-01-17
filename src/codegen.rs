@@ -2,7 +2,7 @@ use std::io::Write;
 
 use crate::node::{Node, NodeKind};
 
-pub fn gen<W: Write>(w: &mut W, node: &Node) {
+fn gen<W: Write>(w: &mut W, node: &Node) {
     if matches!(node.kind, NodeKind::Num(_)) {
         if let NodeKind::Num(n) = node.kind {
             let _ = writeln!(w, "  mov ${n}, %rax");
