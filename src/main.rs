@@ -1,10 +1,6 @@
-use std::{
-    env, fs,
-    io::{stdout, Write},
-    process::Command,
-};
+use std::{env, fs, io::stdout, process::Command};
 
-use codegen::{gen, write_asm};
+use codegen::write_asm;
 
 mod codegen;
 mod node;
