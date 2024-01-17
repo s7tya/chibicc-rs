@@ -95,6 +95,11 @@ impl Tokenizer {
                     self.cursor += 1;
                     continue;
                 }
+                "=" => {
+                    tokens.push(Token::Assign);
+                    self.cursor += 1;
+                    continue;
+                }
                 _ => {}
             }
 
@@ -105,6 +110,14 @@ impl Tokenizer {
                 tokens.push(Token::Num(n));
                 self.cursor += len;
                 continue;
+            }
+
+            if c.is_ascii_alphabetic() {
+                if let Some(name) = self.input.chars().nth(self.cursor) {
+                    tokens.push(Token::Ident(name));
+                    self.cursor += 1;
+                    continue;
+                }
             }
 
             panic!(
