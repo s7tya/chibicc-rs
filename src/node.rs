@@ -20,7 +20,7 @@ pub enum NodeKind {
     Num(i32),
 
     Assign,
-    Var(char),
+    Var(String),
 }
 
 impl Node {

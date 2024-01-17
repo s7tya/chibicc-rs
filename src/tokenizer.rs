@@ -113,11 +113,23 @@ impl Tokenizer {
             }
 
             if c.is_ascii_alphabetic() {
-                if let Some(name) = self.input.chars().nth(self.cursor) {
-                    tokens.push(Token::Ident(name));
-                    self.cursor += 1;
-                    continue;
-                }
+                let index = self
+                    .input
+                    .chars()
+                    .skip(self.cursor)
+                    .position(|char| !char.is_ascii_alphabetic())
+                    .unwrap_or(self.input.len());
+
+                let name = self
+                    .input
+                    .chars()
+                    .skip(self.cursor)
+                    .take(index)
+                    .collect::<String>();
+
+                tokens.push(Token::Ident(name));
+                self.cursor += 1;
+                continue;
             }
 
             panic!(
