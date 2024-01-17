@@ -11,11 +11,15 @@ mod tokenizer;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
+    if args.len() != 2 && args.len() != 3 {
         panic!("引数の個数が正しくありません");
     }
 
-    write_asm(&mut stdout(), &args[1]);
+    if args.len() == 3 && args[1] == "run" {
+        println!("{}", run(&args[2]));
+    } else {
+        write_asm(&mut stdout(), &args[1]);
+    }
 }
 
 fn write_asm<W: Write>(w: &mut W, input: &str) {
@@ -24,15 +28,12 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     //
     let mut tokenizer = tokenizer::Tokenizer::new(input);
     let tokens = tokenizer.tokenize();
-    // let _ = writeln!(w, "{:?}", tokens);
 
     //
     // Parse
     //
     let mut parser = parser::Parser::new(tokens);
-    let tree = parser.parse();
-
-    println!("{tree:?}");
+    let _tree = parser.parse();
 
     //
     // Codegen
