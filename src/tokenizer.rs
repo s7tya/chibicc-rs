@@ -218,6 +218,25 @@ mod test {
     #[test]
     fn test_tokenizer() {
         let tokens = Tokenizer::new("1+5-(20*2)==10").tokenize();
-        assert_eq!(format!("{:?}", tokens), "[Num(1), Plus, Num(5), Minus, LeftParen, Num(20), Star, Num(2), RightParen, Equal, Num(10), Eof]")
+        assert_eq!(
+            format!("{:?}", tokens),
+            format!(
+                "{:?}",
+                vec![
+                    Token::Num(1),
+                    Token::Plus,
+                    Token::Num(5),
+                    Token::Minus,
+                    Token::LeftParen,
+                    Token::Num(20),
+                    Token::Star,
+                    Token::Num(2),
+                    Token::RightParen,
+                    Token::Equal,
+                    Token::Num(10),
+                    Token::Eof,
+                ]
+            )
+        )
     }
 }
