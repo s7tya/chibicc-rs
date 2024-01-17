@@ -1,9 +1,6 @@
 use std::io::Write;
 
-use crate::{
-    node::{Node, NodeKind},
-    parser, tokenizer,
-};
+use crate::node::{Node, NodeKind};
 
 pub fn gen<W: Write>(w: &mut W, node: &Node) {
     if matches!(node.kind, NodeKind::Num(_)) {
@@ -58,22 +55,7 @@ pub fn gen<W: Write>(w: &mut W, node: &Node) {
     }
 }
 
-pub fn write_asm<W: Write>(w: &mut W, input: &str) {
-    //
-    // Tokenize
-    //
-    let mut tokenizer = tokenizer::Tokenizer::new(input);
-    let tokens = tokenizer.tokenize();
-
-    //
-    // Parse
-    //
-    let mut parser = parser::Parser::new(tokens);
-    let trees = parser.parse();
-
-    //
-    // Codegen
-    //
+pub fn codegen<W: Write>(w: &mut W, trees: Vec<Node>) {
     let _ = writeln!(w, "  .globl main");
     let _ = writeln!(w, "main:");
 

@@ -1,6 +1,8 @@
-use std::{env, fs, io::stdout, process::Command};
-
-use codegen::write_asm;
+use std::{
+    env, fs,
+    io::{stdout, Write},
+    process::Command,
+};
 
 mod codegen;
 mod node;
@@ -19,6 +21,25 @@ fn main() {
     } else {
         write_asm(&mut stdout(), &args[1]);
     }
+}
+
+fn write_asm<W: Write>(w: &mut W, input: &str) {
+    //
+    // Tokenize
+    //
+    let mut tokenizer = tokenizer::Tokenizer::new(input);
+    let tokens = tokenizer.tokenize();
+
+    //
+    // Parse
+    //
+    let mut parser = parser::Parser::new(tokens);
+    let trees = parser.parse();
+
+    //
+    // Codegen
+    //
+    codegen::codegen(w, trees);
 }
 
 fn run(input: &str) -> i32 {
