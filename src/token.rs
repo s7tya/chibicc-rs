@@ -5,8 +5,7 @@ pub enum Token {
     Star,
     Slash,
 
-    Assign, // =
-
+    // Assign, // =
     Equal,              // ==
     NotEqual,           // !=
     LessThanOrEqual,    // <=
@@ -21,4 +20,6 @@ pub enum Token {
     Semicolon,
 
     Num(i32),
+
+    Eof,
 }

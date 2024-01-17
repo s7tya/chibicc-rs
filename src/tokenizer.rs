@@ -113,6 +113,8 @@ impl Tokenizer {
             )
         }
 
+        tokens.push(Token::Eof);
+
         tokens
     }
 
