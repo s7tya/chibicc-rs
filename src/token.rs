@@ -23,5 +23,7 @@ pub enum Token {
     Num(i32),
     Ident(String),
 
+    Return,
+
     Eof,
 }

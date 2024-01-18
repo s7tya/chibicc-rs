@@ -29,6 +29,8 @@ pub enum NodeKind {
 
     Assign,
     Var(String),
+
+    Return,
 }
 
 impl Node {

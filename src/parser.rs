@@ -74,7 +74,16 @@ impl Parser {
     }
 
     fn statement(&mut self) -> Node {
-        let node = self.expression();
+        let node = if self.consume(Token::Return) {
+            Node {
+                kind: NodeKind::Return,
+                lhs: Some(Box::new(self.expression())),
+                rhs: None,
+            }
+        } else {
+            self.expression()
+        };
+
         self.expect(Token::Semicolon);
 
         node

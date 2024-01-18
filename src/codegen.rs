@@ -26,6 +26,13 @@ impl Generator {
 
     fn gen_expression<W: Write>(&mut self, w: &mut W, node: &Node) {
         match node.kind {
+            NodeKind::Return => {
+                self.gen_expression(w, node.lhs.as_ref().unwrap());
+
+                let _ = writeln!(w, "  jmp .L.return");
+
+                return;
+            }
             NodeKind::Num(n) => {
                 let _ = writeln!(w, "  mov ${n}, %rax");
                 return;
@@ -117,6 +124,7 @@ impl Generator {
             self.gen_expression(w, &tree);
         }
 
+        let _ = writeln!(w, ".L.return:");
         let _ = writeln!(w, "  mov %rbp, %rsp");
         let _ = writeln!(w, "  pop %rbp");
         let _ = writeln!(w, "  ret");
