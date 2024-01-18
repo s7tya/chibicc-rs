@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     node::{Node, NodeKind},
     token::Token,
@@ -6,15 +8,20 @@ use crate::{
 pub struct Parser {
     tokens: Vec<Token>,
     cursor: usize,
+    locals: HashSet<String>,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, cursor: 0 }
+        Parser {
+            tokens,
+            cursor: 0,
+            locals: HashSet::new(),
+        }
     }
 
-    pub fn parse(&mut self) -> Vec<Node> {
-        self.program()
+    pub fn parse(&mut self) -> (Vec<Node>, HashSet<String>) {
+        (self.program(), self.locals.clone())
     }
 
     fn peek(&self) -> Option<Token> {
@@ -132,14 +139,14 @@ impl Parser {
             } else if self.consume(Token::RightAngleBracket) {
                 node = Node {
                     kind: NodeKind::LessThan,
-                    rhs: Some(Box::new(self.add())),
-                    lhs: Some(Box::new(node)),
+                    lhs: Some(Box::new(self.add())),
+                    rhs: Some(Box::new(node)),
                 }
             } else if self.consume(Token::GreaterThanOrEqual) {
                 node = Node {
                     kind: NodeKind::LessThanOrEqual,
-                    rhs: Some(Box::new(self.add())),
-                    lhs: Some(Box::new(node)),
+                    lhs: Some(Box::new(self.add())),
+                    rhs: Some(Box::new(node)),
                 }
             } else {
                 return node;
@@ -214,10 +221,15 @@ impl Parser {
             return node;
         }
 
-        if let Some(Token::Ident(v)) = self.peek() {
+        if let Some(Token::Ident(name)) = &self.peek() {
             self.cursor += 1;
+
+            if !self.locals.contains(name) {
+                self.locals.insert(name.clone());
+            }
+
             return Node {
-                kind: NodeKind::Var(v),
+                kind: NodeKind::Var(name.clone()),
                 lhs: None,
                 rhs: None,
             };
@@ -233,7 +245,8 @@ mod test {
 
     #[test]
     fn test_number() {
-        let tree = parser::Parser::new(vec![Token::Num(42), Token::Semicolon, Token::Eof]).parse();
+        let (tree, _) =
+            parser::Parser::new(vec![Token::Num(42), Token::Semicolon, Token::Eof]).parse();
         assert_eq!(
             format!("{tree:?}",),
             "[Node { kind: Num(42), lhs: None, rhs: None }]"

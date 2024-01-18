@@ -21,7 +21,7 @@ pub enum Token {
     Semicolon,
 
     Num(i32),
-    Ident(char),
+    Ident(String),
 
     Eof,
 }

@@ -4,6 +4,8 @@ use std::{
     process::Command,
 };
 
+use node::Program;
+
 mod codegen;
 mod node;
 mod parser;
@@ -51,12 +53,12 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     // Parse
     //
     let mut parser = parser::Parser::new(tokens);
-    let trees = parser.parse();
+    let (body, locals) = parser.parse();
 
     //
     // Codegen
     //
-    codegen::codegen(w, trees);
+    codegen::Generator::new().codegen(w, Program { body, locals });
 }
 
 fn run(input: &str) -> i32 {
@@ -110,7 +112,7 @@ mod test {
 
     #[test]
     fn test_with_space() {
-        assert_eq!(run(" 12 + 34 -  5 "), 41);
+        assert_eq!(run(" 12 + 34 -  5 ; "), 41);
     }
 
     #[test]
@@ -139,30 +141,30 @@ mod test {
 
     #[test]
     fn test_greater_than() {
-        assert_eq!(run("0<1"), 1);
-        assert_eq!(run("1<1"), 0);
-        assert_eq!(run("2<1"), 0);
+        assert_eq!(run("0<1;"), 1);
+        assert_eq!(run("1<1;"), 0);
+        assert_eq!(run("2<1;"), 0);
     }
 
     #[test]
     fn test_greater_eq_than() {
-        assert_eq!(run("0<=1"), 1);
-        assert_eq!(run("1<=1"), 1);
-        assert_eq!(run("2<=1"), 0);
+        assert_eq!(run("0<=1;"), 1);
+        assert_eq!(run("1<=1;"), 1);
+        assert_eq!(run("2<=1;"), 0);
     }
 
     #[test]
     fn test_less_than() {
-        assert_eq!(run("1>0"), 1);
-        assert_eq!(run("1>1"), 0);
-        assert_eq!(run("1>2"), 0);
+        assert_eq!(run("1>0;"), 1);
+        assert_eq!(run("1>1;"), 0);
+        assert_eq!(run("1>2;"), 0);
     }
 
     #[test]
     fn test_less_eq_than() {
-        assert_eq!(run("1>=0"), 1);
-        assert_eq!(run("1>=1"), 1);
-        assert_eq!(run("1>=2"), 0);
+        assert_eq!(run("1>=0;"), 1);
+        assert_eq!(run("1>=1;"), 1);
+        assert_eq!(run("1>=2;"), 0);
     }
 
     #[test]

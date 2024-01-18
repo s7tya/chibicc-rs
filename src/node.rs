@@ -1,3 +1,11 @@
+use std::collections::HashSet;
+
+#[derive(Debug)]
+pub struct Program {
+    pub body: Vec<Node>,
+    pub locals: HashSet<String>,
+}
+
 #[derive(Debug)]
 pub struct Node {
     pub kind: NodeKind,
@@ -20,7 +28,7 @@ pub enum NodeKind {
     Num(i32),
 
     Assign,
-    Var(char),
+    Var(String),
 }
 
 impl Node {
