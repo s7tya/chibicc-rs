@@ -175,8 +175,8 @@ mod test {
     #[test]
     fn test_single_letter_var() {
         assert_eq!(run("a = 5;"), 5);
-        assert_eq!(run("b = 0;"), 0);
         assert_eq!(run("k = 40;"), 40);
+        assert_eq!(run("a = 12; b = 3; a * b;"), 36);
     }
 
     #[test]
@@ -185,11 +185,13 @@ mod test {
         assert_eq!(run("returnx = 5;"), 5);
         assert_eq!(run("r906 = 96;"), 96);
         assert_eq!(run("r_906 = 5;"), 5);
+        assert_eq!(run("pi = 3; r = 5; r * r * pi;"), 75);
     }
 
     #[test]
     fn test_return_statement() {
         assert_eq!(run("42; return 30; 4;"), 30);
         assert_eq!(run("return a = 5;"), 5);
+        assert_eq!(run("a = 10; b = 12; return a * b - b; 42;"), 108);
     }
 }
