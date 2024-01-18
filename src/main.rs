@@ -199,4 +199,28 @@ mod test {
     fn test_null_statement() {
         assert_eq!(run("{ ;;; return 5; }"), 5);
     }
+
+    #[test]
+    fn test_if_statement() {
+        assert_eq!(
+            run("
+                { 
+                    if (1==2) { 
+                        a = 5; 
+                    } else { 
+                        a = 10; 
+                    }
+
+                    if (2==2) { 
+                        b = 10; 
+                    } else { 
+                        b = 0; 
+                    } 
+
+                    return a*b; 
+                }
+                "),
+            100
+        );
+    }
 }

@@ -5,6 +5,7 @@ use crate::node::{Node, NodeKind, Program};
 pub struct Generator {
     locals: HashMap<String, i32>,
     stack_size: i32,
+    count: i32,
 }
 
 impl Generator {
@@ -12,6 +13,7 @@ impl Generator {
         Generator {
             locals: HashMap::new(),
             stack_size: 0,
+            count: 0,
         }
     }
 
@@ -35,6 +37,19 @@ impl Generator {
                 self.gen_expression(w, node.lhs.as_ref().unwrap());
 
                 let _ = writeln!(w, "  jmp .L.return");
+            }
+            NodeKind::If(condition, then, els) => {
+                self.count += 1;
+                self.gen_expression(w, condition);
+                let _ = writeln!(w, "  cmp $0, %rax");
+                let _ = writeln!(w, "  je  .L.else.{}", self.count);
+                self.gen_statement(w, then);
+                let _ = writeln!(w, "  jmp .L.end.{}", self.count);
+                let _ = writeln!(w, ".L.else.{}:", self.count);
+                if let Some(els) = els.as_ref() {
+                    self.gen_statement(w, els)
+                }
+                let _ = writeln!(w, ".L.end.{}:", self.count);
             }
             NodeKind::ExpressionStatement => self.gen_expression(w, node.lhs.as_ref().unwrap()),
             _ => {}
