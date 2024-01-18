@@ -194,4 +194,9 @@ mod test {
         assert_eq!(run("{return a = 5;}"), 5);
         assert_eq!(run("{a = 10; b = 12; return a * b - b; 42;}"), 108);
     }
+
+    #[test]
+    fn test_null_statement() {
+        assert_eq!(run("{ ;;; return 5; }"), 5);
+    }
 }

@@ -107,6 +107,14 @@ impl Parser {
     }
 
     fn expression_statement(&mut self) -> Node {
+        if self.consume(Token::Semicolon) {
+            return Node {
+                kind: NodeKind::Block(vec![]),
+                lhs: None,
+                rhs: None,
+            };
+        }
+
         let node = Node {
             kind: NodeKind::ExpressionStatement,
             lhs: Some(Box::new(self.expression())),
