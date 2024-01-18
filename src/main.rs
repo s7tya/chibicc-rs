@@ -112,7 +112,7 @@ mod test {
 
     #[test]
     fn test_with_space() {
-        assert_eq!(run(" 12 + 34 -  5 "), 41);
+        assert_eq!(run(" 12 + 34 -  5 ; "), 41);
     }
 
     #[test]
@@ -141,30 +141,30 @@ mod test {
 
     #[test]
     fn test_greater_than() {
-        assert_eq!(run("0<1"), 1);
-        assert_eq!(run("1<1"), 0);
-        assert_eq!(run("2<1"), 0);
+        assert_eq!(run("0<1;"), 1);
+        assert_eq!(run("1<1;"), 0);
+        assert_eq!(run("2<1;"), 0);
     }
 
     #[test]
     fn test_greater_eq_than() {
-        assert_eq!(run("0<=1"), 1);
-        assert_eq!(run("1<=1"), 1);
-        assert_eq!(run("2<=1"), 0);
+        assert_eq!(run("0<=1;"), 1);
+        assert_eq!(run("1<=1;"), 1);
+        assert_eq!(run("2<=1;"), 0);
     }
 
     #[test]
     fn test_less_than() {
-        assert_eq!(run("1>0"), 1);
-        assert_eq!(run("1>1"), 0);
-        assert_eq!(run("1>2"), 0);
+        assert_eq!(run("1>0;"), 1);
+        assert_eq!(run("1>1;"), 0);
+        assert_eq!(run("1>2;"), 0);
     }
 
     #[test]
     fn test_less_eq_than() {
-        assert_eq!(run("1>=0"), 1);
-        assert_eq!(run("1>=1"), 1);
-        assert_eq!(run("1>=2"), 0);
+        assert_eq!(run("1>=0;"), 1);
+        assert_eq!(run("1>=1;"), 1);
+        assert_eq!(run("1>=2;"), 0);
     }
 
     #[test]
