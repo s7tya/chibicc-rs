@@ -171,4 +171,25 @@ mod test {
     fn test_multiple_statements() {
         assert_eq!(run("1; 2; 3;"), 3);
     }
+
+    #[test]
+    fn test_single_letter_var() {
+        assert_eq!(run("a = 5;"), 5);
+        assert_eq!(run("b = 0;"), 0);
+        assert_eq!(run("k = 40;"), 40);
+    }
+
+    #[test]
+    fn test_multi_letter_var() {
+        assert_eq!(run("test = 5;"), 5);
+        assert_eq!(run("returnx = 5;"), 5);
+        assert_eq!(run("r906 = 96;"), 96);
+        assert_eq!(run("r_906 = 5;"), 5);
+    }
+
+    #[test]
+    fn test_return_statement() {
+        assert_eq!(run("42; return 30; 4;"), 30);
+        assert_eq!(run("return a = 5;"), 5);
+    }
 }
