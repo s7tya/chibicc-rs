@@ -4,6 +4,8 @@ use std::{
     process::Command,
 };
 
+use node::Program;
+
 mod codegen;
 mod node;
 mod parser;
@@ -16,10 +18,27 @@ fn main() {
         panic!("引数の個数が正しくありません");
     }
 
-    if args.len() == 3 && args[1] == "run" {
-        println!("{}", run(&args[2]));
+    if args.len() == 3 {
+        match args[1].as_str() {
+            "run" => {
+                println!("{}", run(&args[2]));
+            }
+            "tokenize" => {
+                let tokens = tokenizer::Tokenizer::new(&args[2]).tokenize();
+                println!("{:?}", tokens);
+            }
+            "parse" => {
+                let tokens = tokenizer::Tokenizer::new(&args[2]).tokenize();
+                let trees = parser::Parser::new(tokens).parse();
+                println!("{:?}", trees);
+            }
+            "compile" => {
+                write_asm(&mut stdout(), &args[2]);
+            }
+            _ => {}
+        }
     } else {
-        write_asm(&mut stdout(), &args[1]);
+        println!("{}", run(&args[1]));
     }
 }
 
@@ -34,12 +53,12 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     // Parse
     //
     let mut parser = parser::Parser::new(tokens);
-    let trees = parser.parse();
+    let (body, locals) = parser.parse();
 
     //
     // Codegen
     //
-    codegen::codegen(w, trees);
+    codegen::Generator::new().codegen(w, Program { body, locals });
 }
 
 fn run(input: &str) -> i32 {
@@ -82,74 +101,126 @@ mod test {
 
     #[test]
     fn test_numbers() {
-        assert_eq!(run("0;"), 0);
-        assert_eq!(run("42;"), 42);
+        assert_eq!(run("{ 0; }"), 0);
+        assert_eq!(run("{ 42; }"), 42);
     }
 
     #[test]
     fn test_add_sub() {
-        assert_eq!(run("5+20-4;"), 21);
+        assert_eq!(run("{ 5+20-4; }"), 21);
     }
 
     #[test]
     fn test_with_space() {
-        assert_eq!(run(" 12 + 34 -  5 "), 41);
+        assert_eq!(run(" { 12 + 34 -  5 ;  }"), 41);
     }
 
     #[test]
     fn test_mul() {
-        assert_eq!(run("5+6*7;"), 47);
+        assert_eq!(run("{ 5+6*7; }"), 47);
     }
 
     #[test]
     fn test_primary() {
-        assert_eq!(run("5*(9-6);"), 15);
-        assert_eq!(run("(3+5)/2;"), 4);
+        assert_eq!(run("{5*(9-6);}"), 15);
+        assert_eq!(run("{(3+5)/2;}"), 4);
     }
 
     #[test]
     fn test_unary() {
-        assert_eq!(run("-10+20;"), 10);
+        assert_eq!(run("{-10+20;}"), 10);
     }
 
     #[test]
     fn test_eq() {
-        assert_eq!(run("0==1;"), 0);
-        assert_eq!(run("42==42;"), 1);
-        assert_eq!(run("0!=1;"), 1);
-        assert_eq!(run("42!=42;"), 0);
+        assert_eq!(run("{0==1;}"), 0);
+        assert_eq!(run("{42==42;}"), 1);
+        assert_eq!(run("{0!=1;}"), 1);
+        assert_eq!(run("{42!=42;}"), 0);
     }
 
     #[test]
     fn test_greater_than() {
-        assert_eq!(run("0<1"), 1);
-        assert_eq!(run("1<1"), 0);
-        assert_eq!(run("2<1"), 0);
+        assert_eq!(run("{0<1;}"), 1);
+        assert_eq!(run("{1<1;}"), 0);
+        assert_eq!(run("{2<1;}"), 0);
     }
 
     #[test]
     fn test_greater_eq_than() {
-        assert_eq!(run("0<=1"), 1);
-        assert_eq!(run("1<=1"), 1);
-        assert_eq!(run("2<=1"), 0);
+        assert_eq!(run("{0<=1;}"), 1);
+        assert_eq!(run("{1<=1;}"), 1);
+        assert_eq!(run("{2<=1;}"), 0);
     }
 
     #[test]
     fn test_less_than() {
-        assert_eq!(run("1>0"), 1);
-        assert_eq!(run("1>1"), 0);
-        assert_eq!(run("1>2"), 0);
+        assert_eq!(run("{1>0;}"), 1);
+        assert_eq!(run("{1>1;}"), 0);
+        assert_eq!(run("{1>2;}"), 0);
     }
 
     #[test]
     fn test_less_eq_than() {
-        assert_eq!(run("1>=0"), 1);
-        assert_eq!(run("1>=1"), 1);
-        assert_eq!(run("1>=2"), 0);
+        assert_eq!(run("{1>=0;}"), 1);
+        assert_eq!(run("{1>=1;}"), 1);
+        assert_eq!(run("{1>=2;}"), 0);
     }
 
     #[test]
     fn test_multiple_statements() {
-        assert_eq!(run("1; 2; 3;"), 3);
+        assert_eq!(run("{1; 2; 3;}"), 3);
+    }
+
+    #[test]
+    fn test_single_letter_var() {
+        assert_eq!(run("{a = 5;}"), 5);
+        assert_eq!(run("{k = 40;}"), 40);
+        assert_eq!(run("{a = 12; b = 3; a * b;}"), 36);
+    }
+
+    #[test]
+    fn test_multi_letter_var() {
+        assert_eq!(run("{test = 5;}"), 5);
+        assert_eq!(run("{returnx = 5;}"), 5);
+        assert_eq!(run("{r906 = 96;}"), 96);
+        assert_eq!(run("{r_906 = 5;}"), 5);
+        assert_eq!(run("{pi = 3; r = 5; r * r * pi;}"), 75);
+    }
+
+    #[test]
+    fn test_return_statement() {
+        assert_eq!(run("{42; return 30; 4;}"), 30);
+        assert_eq!(run("{return a = 5;}"), 5);
+        assert_eq!(run("{a = 10; b = 12; return a * b - b; 42;}"), 108);
+    }
+
+    #[test]
+    fn test_null_statement() {
+        assert_eq!(run("{ ;;; return 5; }"), 5);
+    }
+
+    #[test]
+    fn test_if_statement() {
+        assert_eq!(
+            run("
+                { 
+                    if (1==2) { 
+                        a = 5; 
+                    } else { 
+                        a = 10; 
+                    }
+
+                    if (2==2) { 
+                        b = 10; 
+                    } else { 
+                        b = 0; 
+                    } 
+
+                    return a*b; 
+                }
+                "),
+            100
+        );
     }
 }

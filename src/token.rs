@@ -5,14 +5,18 @@ pub enum Token {
     Star,
     Slash,
 
-    // Assign, // =
+    Assign, // =
+
     Equal,              // ==
     NotEqual,           // !=
     LessThanOrEqual,    // <=
     GreaterThanOrEqual, // >=
 
-    LeftParen,
-    RightParen,
+    LeftParen,  // (
+    RightParen, // )
+
+    LeftBrace,  // {
+    RightBrace, // }
 
     LeftAngleBracket,  // <
     RightAngleBracket, // >
@@ -20,6 +24,13 @@ pub enum Token {
     Semicolon,
 
     Num(i32),
+    Ident(String),
+
+    Return,
+    If,
+    Else,
+    While,
+    For,
 
     Eof,
 }

@@ -1,3 +1,11 @@
+use std::collections::HashSet;
+
+#[derive(Debug)]
+pub struct Program {
+    pub body: Node,
+    pub locals: HashSet<String>,
+}
+
 #[derive(Debug)]
 pub struct Node {
     pub kind: NodeKind,
@@ -12,13 +20,20 @@ pub enum NodeKind {
     Multiply,
     Div,
 
-    // Assign,
     Equal,
     NotEqual,
     LessThan,
     LessThanOrEqual,
 
     Num(i32),
+
+    Assign,
+    Var(String),
+
+    ExpressionStatement,
+    Block(Vec<Node>), // body
+    Return,
+    If(Box<Node>, Box<Node>, Box<Option<Node>>), // condition, then, else
 }
 
 impl Node {
