@@ -127,8 +127,9 @@ impl Tokenizer {
                     .take(index)
                     .collect::<String>();
 
+                self.cursor += name.len();
                 tokens.push(Token::Ident(name));
-                self.cursor += 1;
+
                 continue;
             }
 

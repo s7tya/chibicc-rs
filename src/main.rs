@@ -4,6 +4,8 @@ use std::{
     process::Command,
 };
 
+use node::Program;
+
 mod codegen;
 mod node;
 mod parser;
@@ -51,12 +53,12 @@ fn write_asm<W: Write>(w: &mut W, input: &str) {
     // Parse
     //
     let mut parser = parser::Parser::new(tokens);
-    let trees = parser.parse();
+    let (body, locals) = parser.parse();
 
     //
     // Codegen
     //
-    codegen::codegen(w, trees);
+    codegen::Generator::new().codegen(w, Program { body, locals });
 }
 
 fn run(input: &str) -> i32 {

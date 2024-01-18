@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::{
     node::{Node, NodeKind},
     token::Token,
@@ -6,15 +8,20 @@ use crate::{
 pub struct Parser {
     tokens: Vec<Token>,
     cursor: usize,
+    locals: HashSet<String>,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Parser { tokens, cursor: 0 }
+        Parser {
+            tokens,
+            cursor: 0,
+            locals: HashSet::new(),
+        }
     }
 
-    pub fn parse(&mut self) -> Vec<Node> {
-        self.program()
+    pub fn parse(&mut self) -> (Vec<Node>, HashSet<String>) {
+        (self.program(), self.locals.clone())
     }
 
     fn peek(&self) -> Option<Token> {
@@ -214,10 +221,15 @@ impl Parser {
             return node;
         }
 
-        if let Some(Token::Ident(v)) = self.peek() {
+        if let Some(Token::Ident(name)) = &self.peek() {
             self.cursor += 1;
+
+            if !self.locals.contains(name) {
+                self.locals.insert(name.clone());
+            }
+
             return Node {
-                kind: NodeKind::Var(v),
+                kind: NodeKind::Var(name.clone()),
                 lhs: None,
                 rhs: None,
             };
