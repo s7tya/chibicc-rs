@@ -70,11 +70,14 @@ impl Parser {
 
     fn statement(&mut self) -> Node {
         if self.consume(Token::Return) {
-            return Node {
+            let node = Node {
                 kind: NodeKind::Return,
                 lhs: Some(Box::new(self.expression())),
                 rhs: None,
             };
+            self.expect(Token::Semicolon);
+
+            return node;
         }
 
         if self.consume(Token::LeftBrace) {
