@@ -25,6 +25,17 @@ impl Tokenizer {
                 continue;
             }
 
+            match self.peek(6).as_str() {
+                "return" => {
+                    if !&self.peek(7).chars().nth(6).unwrap().is_alphanumeric() {
+                        tokens.push(Token::Return);
+                        self.cursor += 6;
+                        continue;
+                    }
+                }
+                _ => {}
+            }
+
             match self.peek(2).as_str() {
                 ">=" => {
                     tokens.push(Token::GreaterThanOrEqual);
@@ -112,12 +123,12 @@ impl Tokenizer {
                 continue;
             }
 
-            if c.is_ascii_alphabetic() {
+            if c.is_ascii_alphabetic() || c == '_' {
                 let index = self
                     .input
                     .chars()
                     .skip(self.cursor)
-                    .position(|char| !char.is_ascii_alphabetic())
+                    .position(|char| !(char.is_ascii_alphanumeric() || char == '_'))
                     .unwrap_or(self.input.len());
 
                 let name = self
