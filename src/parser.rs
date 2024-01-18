@@ -293,11 +293,17 @@ mod test {
 
     #[test]
     fn test_number() {
-        let (tree, _) =
-            parser::Parser::new(vec![Token::Num(42), Token::Semicolon, Token::Eof]).parse();
+        let (tree, _) = parser::Parser::new(vec![
+            Token::LeftBrace,
+            Token::Num(42),
+            Token::Semicolon,
+            Token::RightBrace,
+            Token::Eof,
+        ])
+        .parse();
         assert_eq!(
             format!("{tree:?}",),
-            "[Node { kind: Num(42), lhs: None, rhs: None }]"
+            "Node { kind: Block([Node { kind: ExpressionStatement, lhs: Some(Node { kind: Num(42), lhs: None, rhs: None }), rhs: None }]), lhs: None, rhs: None }"
         );
     }
 }
