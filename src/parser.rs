@@ -20,7 +20,7 @@ impl Parser {
         }
     }
 
-    pub fn parse(&mut self) -> (Vec<Node>, HashSet<String>) {
+    pub fn parse(&mut self) -> (Node, HashSet<String>) {
         (self.program(), self.locals.clone())
     }
 
@@ -63,30 +63,69 @@ impl Parser {
         panic!("expected number, but got {next:?}");
     }
 
-    fn program(&mut self) -> Vec<Node> {
-        let mut code: Vec<Node> = vec![];
-
-        while self.tokens[self.cursor] != Token::Eof {
-            code.push(self.statement())
-        }
-
-        code
+    fn program(&mut self) -> Node {
+        self.expect(Token::LeftBrace);
+        self.compound_statement()
     }
 
     fn statement(&mut self) -> Node {
-        let node = if self.consume(Token::Return) {
-            Node {
+        if self.consume(Token::Return) {
+            return Node {
                 kind: NodeKind::Return,
                 lhs: Some(Box::new(self.expression())),
                 rhs: None,
-            }
-        } else {
-            self.expression()
-        };
+            };
+        }
 
+        if self.consume(Token::LeftBrace) {
+            return self.compound_statement();
+        }
+
+        if self.consume(Token::If) {
+            self.expect(Token::LeftParen);
+            let condition = self.expression();
+            self.expect(Token::RightParen);
+            let then = self.statement();
+
+            let els = if self.consume(Token::Else) {
+                Some(self.statement())
+            } else {
+                None
+            };
+
+            return Node {
+                kind: NodeKind::If(Box::new(condition), Box::new(then), Box::new(els)),
+                lhs: None,
+                rhs: None,
+            };
+        }
+
+        self.expression_statement()
+    }
+
+    fn expression_statement(&mut self) -> Node {
+        let node = Node {
+            kind: NodeKind::ExpressionStatement,
+            lhs: Some(Box::new(self.expression())),
+            rhs: None,
+        };
         self.expect(Token::Semicolon);
 
         node
+    }
+
+    fn compound_statement(&mut self) -> Node {
+        let mut statements = vec![];
+
+        while !self.consume(Token::RightBrace) {
+            statements.push(self.statement())
+        }
+
+        Node {
+            kind: NodeKind::Block(statements),
+            lhs: None,
+            rhs: None,
+        }
     }
 
     fn expression(&mut self) -> Node {

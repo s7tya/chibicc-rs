@@ -24,15 +24,25 @@ impl Generator {
         panic!("ローカル変数ではありません: {node:?}");
     }
 
-    fn gen_expression<W: Write>(&mut self, w: &mut W, node: &Node) {
-        match node.kind {
+    fn gen_statement<W: Write>(&mut self, w: &mut W, node: &Node) {
+        match &node.kind {
+            NodeKind::Block(nodes) => {
+                for node in nodes {
+                    self.gen_statement(w, node);
+                }
+            }
             NodeKind::Return => {
                 self.gen_expression(w, node.lhs.as_ref().unwrap());
 
                 let _ = writeln!(w, "  jmp .L.return");
-
-                return;
             }
+            NodeKind::ExpressionStatement => self.gen_expression(w, node.lhs.as_ref().unwrap()),
+            _ => {}
+        }
+    }
+
+    fn gen_expression<W: Write>(&mut self, w: &mut W, node: &Node) {
+        match node.kind {
             NodeKind::Num(n) => {
                 let _ = writeln!(w, "  mov ${n}, %rax");
                 return;
@@ -120,9 +130,7 @@ impl Generator {
         let _ = writeln!(w, "  mov %rsp, %rbp");
         let _ = writeln!(w, "  sub ${}, %rsp", self.stack_size);
 
-        for tree in function.body {
-            self.gen_expression(w, &tree);
-        }
+        self.gen_statement(w, &function.body);
 
         let _ = writeln!(w, ".L.return:");
         let _ = writeln!(w, "  mov %rbp, %rsp");

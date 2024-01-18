@@ -25,15 +25,44 @@ impl Tokenizer {
                 continue;
             }
 
-            match self.peek(6).as_str() {
-                "return" => {
-                    if !&self.peek(7).chars().nth(6).unwrap().is_alphanumeric() {
-                        tokens.push(Token::Return);
-                        self.cursor += 6;
-                        continue;
-                    }
-                }
-                _ => {}
+            if self.peek(6).as_str() == "return"
+                && !&self.peek(7).chars().nth(6).unwrap().is_alphanumeric()
+            {
+                tokens.push(Token::Return);
+                self.cursor += 6;
+                continue;
+            }
+
+            if self.peek(5).as_str() == "while"
+                && !&self.peek(6).chars().nth(5).unwrap().is_alphanumeric()
+            {
+                tokens.push(Token::While);
+                self.cursor += 5;
+                continue;
+            }
+
+            if self.peek(4).as_str() == "else"
+                && !&self.peek(5).chars().nth(4).unwrap().is_alphanumeric()
+            {
+                tokens.push(Token::Else);
+                self.cursor += 4;
+                continue;
+            }
+
+            if self.peek(3).as_str() == "for"
+                && !&self.peek(4).chars().nth(3).unwrap().is_alphanumeric()
+            {
+                tokens.push(Token::For);
+                self.cursor += 3;
+                continue;
+            }
+
+            if self.peek(2).as_str() == "if"
+                && !&self.peek(3).chars().nth(2).unwrap().is_alphanumeric()
+            {
+                tokens.push(Token::If);
+                self.cursor += 2;
+                continue;
             }
 
             match self.peek(2).as_str() {
@@ -88,6 +117,16 @@ impl Tokenizer {
                 }
                 ")" => {
                     tokens.push(Token::RightParen);
+                    self.cursor += 1;
+                    continue;
+                }
+                "{" => {
+                    tokens.push(Token::LeftBrace);
+                    self.cursor += 1;
+                    continue;
+                }
+                "}" => {
+                    tokens.push(Token::RightBrace);
                     self.cursor += 1;
                     continue;
                 }

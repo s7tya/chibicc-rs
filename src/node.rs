@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct Program {
-    pub body: Vec<Node>,
+    pub body: Node,
     pub locals: HashSet<String>,
 }
 
@@ -30,7 +30,10 @@ pub enum NodeKind {
     Assign,
     Var(String),
 
+    ExpressionStatement,
+    Block(Vec<Node>), // body
     Return,
+    If(Box<Node>, Box<Node>, Box<Option<Node>>), // condition, then, else
 }
 
 impl Node {

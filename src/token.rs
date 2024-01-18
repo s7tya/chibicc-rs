@@ -12,8 +12,11 @@ pub enum Token {
     LessThanOrEqual,    // <=
     GreaterThanOrEqual, // >=
 
-    LeftParen,
-    RightParen,
+    LeftParen,  // (
+    RightParen, // )
+
+    LeftBrace,  // {
+    RightBrace, // }
 
     LeftAngleBracket,  // <
     RightAngleBracket, // >
@@ -24,6 +27,10 @@ pub enum Token {
     Ident(String),
 
     Return,
+    If,
+    Else,
+    While,
+    For,
 
     Eof,
 }
