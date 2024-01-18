@@ -139,14 +139,14 @@ impl Parser {
             } else if self.consume(Token::RightAngleBracket) {
                 node = Node {
                     kind: NodeKind::LessThan,
-                    rhs: Some(Box::new(self.add())),
-                    lhs: Some(Box::new(node)),
+                    lhs: Some(Box::new(self.add())),
+                    rhs: Some(Box::new(node)),
                 }
             } else if self.consume(Token::GreaterThanOrEqual) {
                 node = Node {
                     kind: NodeKind::LessThanOrEqual,
-                    rhs: Some(Box::new(self.add())),
-                    lhs: Some(Box::new(node)),
+                    lhs: Some(Box::new(self.add())),
+                    rhs: Some(Box::new(node)),
                 }
             } else {
                 return node;
